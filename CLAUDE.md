@@ -232,6 +232,9 @@ pnpm lint:fix                   # ESLint with autofix
 pnpm format                     # Prettier format
 pnpm format:check               # Prettier check
 
+# Generate the TanStack Router tree before standalone typecheck/lint on a fresh checkout:
+pnpm --filter desktop exec vite build  # produces apps/desktop/src/routeTree.gen.ts
+
 # Testing (TypeScript)
 pnpm test                       # Vitest across all packages
 pnpm test:watch                 # Vitest in watch mode
@@ -291,6 +294,7 @@ cargo fmt --check               # Format check
 - Use TanStack Router search params for shareable configurations.
 - Use TanStack Query for all Tauri command data fetching.
 - Use `@tauri-apps/api/event` for real-time event listeners (quotes, progress, sync).
+- React 19 has no global `JSX` namespace. For return-type annotations use `import { type JSX } from "react"`.
 
 ### Styling
 
@@ -299,6 +303,8 @@ cargo fmt --check               # Format check
 - Use CSS variables for design tokens defined in `@chrdfin/config`.
 - shadcn/ui components are the base. Extend via composition, not modification.
 - Use `cn()` utility (from `@chrdfin/ui/lib/utils`) for conditional class merging.
+- Do NOT set `html { font-size }` in `globals.css` — Tailwind utilities are rem-based and inherit the user-agent default (16px). Overriding it silently scales every utility.
+- Tailwind v4 has no `text-md` utility (scale jumps from `text-base` 16px to `text-lg` 18px). Use the standard `xs/sm/base/lg/xl/2xl` scale.
 
 ### Testing
 
@@ -433,3 +439,13 @@ Start with Tiingo free tier during development. Tiingo Power ($10/mo) for produc
 - Do NOT use Comlink. There are no WebWorkers to communicate with.
 - Do NOT use `localStorage` or `sessionStorage`. Use DuckDB (via Tauri commands) for persistent state.
 - Do NOT panic in Rust computation code. Use `Result<T, E>` everywhere.
+
+---
+
+## Common Gotchas
+
+- **Tauri `generate_handler!` paths:** Use full module paths (`commands::system::foo`), not re-exported names — the macro looks for the synthetic `__cmd__<name>` helper next to the function definition.
+- **TanStack Router `redirect()` + Zod `.default()`:** Routes whose `validateSearch` has default-bearing fields require `search: Schema.parse({})` on programmatic redirects.
+- **Shared library tsconfigs must not declare `rootDir`** — it resolves relative to the file declaring it, breaking every consuming package. Per-package tsconfigs override if needed.
+- **Tauri icons:** `pnpm exec tauri icon <source.png>` (run from `apps/desktop`) generates the full icon set from a single 1024×1024 source PNG.
+- **Cargo workspace `resolver = "3"`** is required for edition 2024 (already locked in `Cargo.toml`).
