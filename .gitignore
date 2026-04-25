@@ -145,6 +145,9 @@ vite.config.ts.timestamp-*
 vite.config.js.timestamp-*
 react-router.config.ts.timestamp-*
 
+# TanStack Router generated route tree
+**/routeTree.gen.ts
+
 # Test, coverage, and automation
 coverage/
 .nyc_output/
