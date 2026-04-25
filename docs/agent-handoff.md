@@ -10,7 +10,7 @@ The goal is simple: do not invent patterns when patterns already exist. Every ar
 
 ## What is chrdfin?
 
-A personal financial intelligence desktop application: portfolio backtesting, Monte Carlo simulation, portfolio tracking, optimization, calculators, market data, screener, and news. Built as a Tauri v2 native desktop app — **not** a web app — with a Vite + React 19 SPA frontend and a Rust computation/storage backend using DuckDB.
+A personal financial intelligence desktop application: a customizable widget-based dashboard plus portfolio backtesting, Monte Carlo simulation, portfolio tracking, optimization, calculators, market data, screener, and news. Built as a Tauri v2 native desktop app — **not** a web app — with a Vite + React 19 SPA frontend and a Rust computation/storage backend using DuckDB.
 
 Single-user. Personal use. No live trading. No multi-user concerns. Open-source intent.
 

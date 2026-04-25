@@ -84,7 +84,17 @@ The complete Phase 0 route tree. Every file listed below is created in Phase 0 w
 ```
 apps/desktop/src/routes/
 ├── __root.tsx                        # Platform shell, root error boundary
-├── index.tsx                         # / → home (redirects to last-active section)
+├── index.tsx                         # / → Dashboard (home screen; widget grid lands in Phase 11)
+│
+├── tracking/                         # Listed first — sidebar order is Tracking → Analysis → Tools → Market.
+│   ├── route.tsx
+│   ├── index.tsx                     # /tracking → /tracking/portfolio
+│   ├── portfolio.tsx                 # /tracking/portfolio (search: portfolioId)
+│   ├── portfolio.lazy.tsx
+│   ├── transactions.tsx              # /tracking/transactions
+│   ├── transactions.lazy.tsx
+│   ├── watchlist.tsx                 # /tracking/watchlist
+│   └── watchlist.lazy.tsx
 │
 ├── analysis/
 │   ├── route.tsx                     # /analysis layout + section error boundary
@@ -95,16 +105,6 @@ apps/desktop/src/routes/
 │   ├── monte-carlo.lazy.tsx
 │   ├── optimizer.tsx                 # /analysis/optimizer (Phase 9, gated)
 │   └── optimizer.lazy.tsx
-│
-├── tracking/
-│   ├── route.tsx
-│   ├── index.tsx                     # /tracking → /tracking/portfolio
-│   ├── portfolio.tsx                 # /tracking/portfolio (search: portfolioId)
-│   ├── portfolio.lazy.tsx
-│   ├── transactions.tsx              # /tracking/transactions
-│   ├── transactions.lazy.tsx
-│   ├── watchlist.tsx                 # /tracking/watchlist
-│   └── watchlist.lazy.tsx
 │
 ├── tools/
 │   ├── route.tsx
@@ -152,6 +152,12 @@ apps/desktop/src/routes/
 | `$param.tsx` | Dynamic path parameter (e.g. `ticker/$symbol.tsx` → `/ticker/AAPL`) |
 | `*.lazy.tsx` | Lazy-loaded component (route metadata in `*.tsx`, component in `*.lazy.tsx`) |
 | `-prefix/` | Ignored by router; used for utility files inside `routes/` |
+
+### Dashboard route (`/`)
+
+The root `index.tsx` is the **Dashboard** — the application's home screen and the route the user lands on after launch. It is the only nav item in the sidebar that lives outside the four domain section groups. Phase 0 ships an intent placeholder (heading, planned-widget cards, IPC health check). Phase 11 replaces the placeholder with a customizable widget grid backed by `<DashboardGrid>` and a layout state persisted to DuckDB (`app_settings.dashboard_layout`). See `docs/technical-blueprint.md` § Dashboard Module for the spec.
+
+The Dashboard route uses an exact pathname match for its sidebar active state so it is highlighted only on `/`, never on nested routes. All other section nav items use prefix matching (`startsWith`) so child routes like `/market/ticker/AAPL` keep the parent section highlighted.
 
 ---
 

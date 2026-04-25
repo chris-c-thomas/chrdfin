@@ -457,13 +457,15 @@ Implemented in `apps/desktop/src/components/shell/sidebar.tsx`. Built on shadcn/
 
 - **Width:** 240px expanded, 48px collapsed. Toggle persists across sessions (stored via Tauri `app_data_dir` config file, not localStorage — see CLAUDE.md).
 - **Background:** `bg-sidebar` (matches `--card` in light, `--background` in dark for visual integration with the title bar).
-- **Logo block:** 48px tall. "CHRD" wordmark in Plex Mono, weight 600, when collapsed; "chrdfin" lowercase in Plex Sans when expanded.
-- **Sections:** four groups with subtle dividers (`border-sidebar-border`). When collapsed, dividers persist but section titles are hidden.
+- **Logo block:** 56px tall (matches the top header for a clean horizontal divider line). "CHRD" wordmark in Plex Mono, weight 600, when collapsed; "chrdfin" lowercase in Plex Sans when expanded.
+- **Top-level Dashboard item:** rendered above the section groups as an ungrouped, always-visible entry point. Routes to `/`. Uses an exact pathname match for the active state so it is highlighted only on the home view, not on any nested route.
+- **Sections:** four groups below Dashboard with subtle dividers (`border-sidebar-border`). When collapsed, dividers persist but section titles are hidden. Section order is intentional — `Tracking` precedes `Analysis` because the day-to-day power-user flow starts at "what do I own and how is it doing?" before reaching for backtesting/MC tooling.
 
-| Section | Items |
+| Position | Items |
 |---|---|
-| **Analysis** | Backtesting, Monte Carlo, Optimizer |
+| **Dashboard** (top-level, ungrouped) | Dashboard |
 | **Tracking** | Portfolio, Transactions, Watchlist |
+| **Analysis** | Backtesting, Monte Carlo, Optimizer |
 | **Tools** | Calculators, Compare |
 | **Market** | Screener, News, Calendar |
 

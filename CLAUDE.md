@@ -177,16 +177,19 @@ apps/desktop        -> all packages
 
 ## Feature Domains & Routes
 
-The platform is organized into feature domains, each isolated in its own route module. Domains are gated by feature flags in `@chrdfin/config`.
+The platform is organized into feature domains, each isolated in its own route module. Domains are gated by feature flags in `@chrdfin/config`. The Dashboard is the home page and sits outside the section taxonomy — it is rendered above all section groups in the sidebar and is always visible.
+
+Sidebar order (top → bottom): **Dashboard → Tracking → Analysis → Tools → Market.** Tracking precedes Analysis intentionally — the day-to-day power-user flow starts at "what do I own and how is it doing?" before reaching for backtesting/MC tooling.
 
 | Domain | Route Path | Feature Flag | Status |
 |---|---|---|---|
-| Backtesting | `/analysis/backtest` | `backtest` | Phase 2-3 |
-| Monte Carlo | `/analysis/monte-carlo` | `monteCarlo` | Phase 4 |
-| Optimizer | `/analysis/optimizer` | `optimizer` | Phase 9 (deferred) |
+| Dashboard | `/` | (always on) | Phase 0 placeholder; widget framework lands in Phase 11 |
 | Portfolio Tracker | `/tracking/portfolio` | `tracker` | Phase 5 |
 | Transactions | `/tracking/transactions` | `tracker` | Phase 5 |
 | Watchlists | `/tracking/watchlist` | `tracker` | Phase 5 |
+| Backtesting | `/analysis/backtest` | `backtest` | Phase 2-3 |
+| Monte Carlo | `/analysis/monte-carlo` | `monteCarlo` | Phase 4 |
+| Optimizer | `/analysis/optimizer` | `optimizer` | Phase 9 (deferred) |
 | Calculators | `/tools/calculators/*` | `calculators` | Phase 6 |
 | Comparison Tool | `/tools/compare` | `backtest` | Phase 10 |
 | Stock Screener | `/market/screener` | `marketData` | Phase 7 |
@@ -195,7 +198,9 @@ The platform is organized into feature domains, each isolated in its own route m
 | News Feed | `/market/news` | `news` | Phase 8 |
 | Calendar | `/market/calendar` | `news` | Phase 8 |
 
-**Rule:** Domains never import from each other. Cross-domain data flows through Tauri commands and shared types in `@chrdfin/types`.
+**Rule:** Domains never import from each other. Cross-domain data flows through Tauri commands and shared types in `@chrdfin/types`. The Dashboard is a strict consumer — its widgets read from existing domain query surfaces but never import from another domain's `routes/` directory.
+
+**Dashboard vision:** the home page will become a customizable widget grid covering markets overview, portfolio summary, recent backtests, accounts, news, and the earnings/economic calendar. Layout, widget selection, and refresh cadence are user-configurable and persisted in DuckDB (`app_settings.dashboard_layout`). See `docs/technical-blueprint.md` § Dashboard Module for the full spec.
 
 ---
 

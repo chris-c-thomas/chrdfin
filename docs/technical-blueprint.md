@@ -12,7 +12,7 @@
 | **Computation** | Native Rust (multi-threaded via Rayon) |
 | **Data Storage** | DuckDB (embedded, columnar) |
 | **Deployment** | Desktop application (macOS, Linux, Windows) |
-| **Platform Scope** | Backtesting, Monte Carlo, Portfolio Tracking, Optimization, Calculators, Market Data, News, Research |
+| **Platform Scope** | Dashboard, Backtesting, Monte Carlo, Portfolio Tracking, Optimization, Calculators, Market Data, News, Research |
 
 ---
 
@@ -28,6 +28,7 @@
 - [Computation Engine](#computation-engine)
 - [Backtesting Engine](#backtesting-engine)
 - [Monte Carlo Simulation Engine](#monte-carlo-simulation-engine)
+- [Dashboard Module](#dashboard-module)
 - [Portfolio Tracking Module](#portfolio-tracking-module)
 - [Portfolio Optimization Module](#portfolio-optimization-module)
 - [Financial Calculators Module](#financial-calculators-module)
@@ -63,6 +64,7 @@ Core capabilities, delivered incrementally:
 5. **Financial Calculators** — Compound growth, retirement planning, withdrawal strategy comparison, tax-loss harvesting simulation, options payoff diagrams, risk/reward calculators.
 6. **Market Data & Screener** — Real-time (during market hours) and historical price data for equities, ETFs, mutual funds, and options chains. Screening and filtering tools.
 7. **News & Research** — Aggregated financial news feeds, earnings calendars, economic event calendars, and a personal research reference library.
+8. **Customizable Dashboard** — A widget-based home screen pulling from every other domain (markets, portfolio, recent backtests, accounts, news, calendar). Layout, widget selection, and refresh cadence are user-configurable. The Phase 0 dashboard renders an intent placeholder; the widget framework lands in a later phase.
 
 The architecture prioritizes computational power, local data sovereignty, and the keyboard-driven, information-dense experience that professional financial workstations deliver. No live trading or order execution is in scope.
 
@@ -78,6 +80,8 @@ Each feature domain is a self-contained vertical that depends on shared horizont
 ┌─────────────────────────────────────────────────────────────────────┐
 │                       chrdfin Platform Shell                        │
 │  (App Layout, Navigation, Command Palette, Global Search, Themes)   │
+├─────────────────────────────────────────────────────────────────────┤
+│           Customizable Dashboard (widgets, home screen)             │
 ├──────────┬──────────┬──────────┬──────────┬──────────┬──────────────┤
 │ Backtest │ Monte    │ Portfolio│ Portfolio │Financial │ Market Data  │
 │ Engine   │ Carlo    │ Tracker  │ Optimizer │Calculators│ & Screener  │
@@ -103,6 +107,7 @@ Each feature domain is a self-contained vertical that depends on shared horizont
 
 | Domain | Description | Data Dependencies | Compute Requirements |
 |---|---|---|---|
+| **Dashboard** | Widget-based home screen aggregating signals from every other domain | All domain queries via the shared layer | Light (composition + cached query results) |
 | **Backtesting** | Historical portfolio simulation with rebalancing strategies | Daily prices, dividends, macro series | Heavy (native Rust, multi-threaded) |
 | **Monte Carlo** | Forward-looking probabilistic simulation | Historical returns, macro series | Heavy (native Rust, Rayon parallelism) |
 | **Portfolio Tracker** | Holdings, transactions, cost basis, P&L, allocation views | Daily prices, user portfolio data | Light (Rust query + TS rendering) |
@@ -120,6 +125,7 @@ Domains share data through the Rust backend's query layer but never call each ot
 - Optimizer produces target allocations that can be compared to Tracker's current allocation.
 - Market Data provides the real-time prices that Tracker uses for current P&L.
 - News feed items can be linked to tickers in the Tracker's watchlist.
+- Dashboard widgets read from every domain's query surface but contribute nothing back — it is strictly a consumer, never a producer. Each widget is a thin React component bound to a TanStack Query result; widget code never imports from another domain's feature code.
 
 These flows are mediated by shared types and Tauri commands, not by direct inter-module coupling. A `PortfolioContext` type in `@chrdfin/types` serves as the common data contract.
 
@@ -569,6 +575,42 @@ With native Rust + Rayon on target hardware:
 
 ---
 
+## Dashboard Module
+
+The dashboard is the application's home screen and the route a user lands on after launch. It is rendered at `/` and is the only nav item in the sidebar that lives outside the four domain section groups — it is conceptually the entry point, not a domain.
+
+### Vision
+
+A customizable grid of widgets giving the user an at-a-glance overview of every other domain. Layout (which widgets, where, what size), refresh cadence, and per-widget configuration (e.g. which tickers a "Market Overview" widget tracks) are all user-configurable and persisted in DuckDB so the dashboard restores between sessions.
+
+### Initial widget set
+
+These are the targets for the first iteration of the widget framework. Every widget is a thin React component bound to a TanStack Query result reading from existing Tauri commands; no domain feature code is duplicated.
+
+| Widget | Reads from | Notes |
+|---|---|---|
+| **Portfolio Summary** | `list_portfolios`, `list_holdings`, `get_quotes` | Total value, day change, allocation breakdown, top movers across selected portfolios. |
+| **Market Overview** | `get_quotes` (watchlist), `get_macro_series` | Major indices, sector performance, configurable watchlist quotes during market hours. |
+| **Recent Backtests** | `simulation_results` query | Last-run portfolio simulations with CAGR, max drawdown, and Sharpe summary. |
+| **Accounts** | `list_portfolios`, `list_holdings` | Aggregated balances across linked accounts and tracked portfolios. |
+| **News** | `get_news` | Top headlines and ticker-tagged stories from Tiingo News and curated RSS feeds. |
+| **Earnings & Calendar** | `earnings_calendar` query, `get_macro_series` | Upcoming earnings releases and economic events for tracked tickers. |
+| **Quick Actions** | (none) | Buttons to launch a new backtest, create a portfolio, search a ticker, etc. |
+
+### Architecture constraints
+
+1. **Strictly a consumer.** Dashboard widgets only read from existing domain query surfaces. They never own data, never import from another domain's `routes/` directory, and never bypass the shared Tauri command layer.
+2. **Widget framework precedes widgets.** A small `<DashboardGrid>` + `<Widget>` system in `apps/desktop/src/dashboard/` (or a future `@chrdfin/dashboard` package) handles drag/drop, resize, and config persistence before any widget ships.
+3. **Layout persisted to DuckDB.** The `app_settings` table stores layout state under a `dashboard_layout` key. No localStorage. Cross-machine sync via the existing Parquet export/import path.
+4. **Phase 0 placeholder.** Until the framework lands, the route renders an intent placeholder listing the planned widgets and the Phase 0 IPC health check.
+5. **Always visible in the sidebar.** Unlike domain nav items, the Dashboard nav entry has no feature flag — it is the home page and is rendered above all section groups in `apps/desktop/src/components/shell/sidebar.tsx`.
+
+### Implementation phase
+
+Slotted as **Phase 11** below — after the core domains have shipped enough commands and data shapes for the widgets to bind to. The widget framework can be moved earlier if the placeholder home view starts blocking real workflows; the trade-off is that early widgets would have less to display.
+
+---
+
 ## Portfolio Tracking Module
 
 ### Core Features
@@ -733,10 +775,11 @@ The Tauri command layer replaces REST API routes. Each command is a `#[tauri::co
 | 8 | News & Research | 1-2 weeks | News feed, earnings calendar, economic calendar |
 | 9 | Portfolio Optimization | 2-3 weeks | Mean-variance, efficient frontier, risk parity |
 | 10 | Polish & Distribution | 2-3 weeks | Command palette, performance, packaging, auto-update |
+| 11 | Customizable Dashboard | 2-3 weeks | `<DashboardGrid>` widget framework with drag/drop/resize, layout persisted to DuckDB, initial widget set (Portfolio Summary, Market Overview, Recent Backtests, Accounts, News, Earnings & Calendar, Quick Actions). Replaces the Phase 0 placeholder home view. |
 
-**Total estimated timeline: 20-28 weeks** (5-7 months at 15-20 hrs/week)
+**Total estimated timeline: 22-31 weeks** (5.5-8 months at 15-20 hrs/week)
 
-> Phases 0-4 are the core delivery. Phases 5-10 can be reordered or parallelized.
+> Phases 0-4 are the core delivery. Phases 5-11 can be reordered or parallelized; Phase 11 (Dashboard) depends on read-side commands shipped by Phases 1, 5, 7, and 8 and is best landed once those domains have enough surface area to populate the widgets.
 
 ### Phase 0: Foundation & Tooling
 

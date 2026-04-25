@@ -21,6 +21,7 @@ import {
   ChevronLeft,
   GitCompare,
   Layers,
+  LayoutDashboard,
   LineChart,
   List,
   Newspaper,
@@ -42,21 +43,26 @@ interface NavSection {
   items: NavItem[];
 }
 
+/**
+ * Section order: Tracking precedes Analysis intentionally — the day-to-day
+ * power-user flow starts at "what do I own and how is it doing?" before
+ * reaching for backtesting/MC tooling.
+ */
 const SECTIONS: NavSection[] = [
-  {
-    label: "Analysis",
-    items: [
-      { label: "Backtesting", to: "/analysis/backtest", icon: LineChart, flag: "backtest" },
-      { label: "Monte Carlo", to: "/analysis/monte-carlo", icon: Sigma, flag: "monteCarlo" },
-      { label: "Optimizer", to: "/analysis/optimizer", icon: Activity, flag: "optimizer" },
-    ],
-  },
   {
     label: "Tracking",
     items: [
       { label: "Portfolio", to: "/tracking/portfolio", icon: Briefcase, flag: "tracker" },
       { label: "Transactions", to: "/tracking/transactions", icon: List, flag: "tracker" },
       { label: "Watchlist", to: "/tracking/watchlist", icon: Star, flag: "tracker" },
+    ],
+  },
+  {
+    label: "Analysis",
+    items: [
+      { label: "Backtesting", to: "/analysis/backtest", icon: LineChart, flag: "backtest" },
+      { label: "Monte Carlo", to: "/analysis/monte-carlo", icon: Sigma, flag: "monteCarlo" },
+      { label: "Optimizer", to: "/analysis/optimizer", icon: Activity, flag: "optimizer" },
     ],
   },
   {
@@ -79,6 +85,7 @@ const SECTIONS: NavSection[] = [
 export function AppSidebar(): JSX.Element {
   const location = useLocation();
   const { open, toggle } = useSidebar();
+  const isDashboardActive = location.pathname === "/";
 
   return (
     <Sidebar>
@@ -88,6 +95,24 @@ export function AppSidebar(): JSX.Element {
         </span>
       </SidebarHeader>
       <SidebarContent>
+        {/*
+         * Dashboard is rendered above the section groups as a top-level
+         * entry point. It is always visible (no feature flag) and uses
+         * an exact pathname match so it is only highlighted on `/`.
+         */}
+        <SidebarGroup>
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild isActive={isDashboardActive}>
+                <Link to="/" aria-label="Dashboard">
+                  <LayoutDashboard className="size-4 shrink-0" />
+                  {open && <span className="truncate">Dashboard</span>}
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarGroup>
+
         {SECTIONS.map((section) => {
           const visible = section.items.filter((item) => featureFlags[item.flag]);
           if (visible.length === 0) return null;

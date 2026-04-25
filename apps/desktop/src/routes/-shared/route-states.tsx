@@ -12,7 +12,7 @@ export function RoutePending(): JSX.Element {
 export function RouteErrorBoundary({ error, reset }: ErrorComponentProps): JSX.Element {
   return (
     <div className="flex h-full flex-col items-center justify-center gap-3 p-6">
-      <div className="text-lg text-destructive font-medium">Something went wrong</div>
+      <div className="text-destructive text-lg font-medium">Something went wrong</div>
       <pre className="text-muted-foreground max-w-2xl whitespace-pre-wrap font-mono text-xs">
         {error instanceof Error ? error.message : String(error)}
       </pre>
@@ -35,7 +35,7 @@ export function RouteErrorBoundary({ error, reset }: ErrorComponentProps): JSX.E
 export function SectionErrorBoundary({ error, reset }: ErrorComponentProps): JSX.Element {
   return (
     <div className="flex h-full flex-col items-center justify-center gap-3 p-6">
-      <div className="text-lg text-destructive font-medium">Section unavailable</div>
+      <div className="text-destructive text-lg font-medium">Section unavailable</div>
       <pre className="text-muted-foreground max-w-2xl whitespace-pre-wrap font-mono text-xs">
         {error instanceof Error ? error.message : String(error)}
       </pre>
