@@ -210,6 +210,21 @@ The human runs the final `git commit && git tag && git push --tags` after review
 
 ---
 
+## Default git posture
+
+The user prefers to run `git commit`, `git push`, `gh pr create`, and `git tag` themselves. Claude's default is to **prepare** the work (write code, stage files via `git add`, draft commit messages) and **report** — then provide the exact shell commands the user should run.
+
+When the user explicitly asks Claude to commit/push/tag on their behalf:
+
+- **All commits MUST be GPG-signed.** Use `git commit -S -m "..."` (or rely on `commit.gpgsign = true` in the user's git config — verify with `git config --get commit.gpgsign` before assuming it's on).
+- **All tags MUST be signed.** Use `git tag -s vX.Y.Z -m "..."` for annotated signed tags. Never lightweight (`git tag vX.Y.Z`) — they can't be signed.
+- If signing fails (no GPG key, expired key, no agent), stop and surface the error rather than committing unsigned. Don't pass `--no-gpg-sign`.
+- Co-author trailers are off by default (the user has explicitly asked for no `Co-Authored-By:` lines on commit messages).
+
+This applies even to `release: vX.Y.Z` commits and to all `v*` tags.
+
+---
+
 ## When Claude is asked to "add a changeset"
 
 For a feature/fix PR:
