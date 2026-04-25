@@ -1859,9 +1859,9 @@ import {
 } from "@chrdfin/ui/components/sidebar";
 import { Link, useLocation } from "@tanstack/react-router";
 import {
-  Activity, BarChart3, Briefcase, Calculator, Calendar,
-  GitCompare, Layers, LineChart, List, Newspaper,
-  PieChart, Sigma, Star,
+  Activity, BarChart2, BookOpen, Briefcase, Calculator, Calendar,
+  FileText, GitCompare, Layers, LineChart, List, Newspaper,
+  PiggyBank, Receipt, Scale, Sigma, Star, TrendingUp,
 } from "lucide-react";
 import { featureFlags } from "@chrdfin/config";
 
@@ -1877,36 +1877,48 @@ interface NavSection {
   items: NavItem[];
 }
 
+/**
+ * Section order: Tracking → Analysis & Tools → Market → Reference.
+ * Plural labels (Portfolios, Watchlists, Screeners, Calendars) signal
+ * multi-instance domains — see docs/technical-blueprint.md § Multi-Instance Domains.
+ */
 const SECTIONS: NavSection[] = [
-  {
-    label: "Analysis",
-    items: [
-      { label: "Backtesting", to: "/analysis/backtest",     icon: LineChart, flag: "backtest" },
-      { label: "Monte Carlo", to: "/analysis/monte-carlo",  icon: Sigma,     flag: "monteCarlo" },
-      { label: "Optimizer",   to: "/analysis/optimizer",    icon: Activity,  flag: "optimizer" },
-    ],
-  },
   {
     label: "Tracking",
     items: [
-      { label: "Portfolio",    to: "/tracking/portfolio",    icon: Briefcase, flag: "tracker" },
+      { label: "Portfolios",   to: "/tracking/portfolio",    icon: Briefcase, flag: "tracker" },
       { label: "Transactions", to: "/tracking/transactions", icon: List,      flag: "tracker" },
-      { label: "Watchlist",    to: "/tracking/watchlist",    icon: Star,      flag: "tracker" },
+      { label: "Watchlists",   to: "/tracking/watchlist",    icon: Star,      flag: "tracker" },
     ],
   },
   {
-    label: "Tools",
+    label: "Analysis & Tools",
     items: [
-      { label: "Calculators", to: "/tools/calculators", icon: Calculator,  flag: "calculators" },
-      { label: "Compare",     to: "/tools/compare",     icon: GitCompare,  flag: "backtest" },
+      { label: "Backtesting",          to: "/analysis/backtest",             icon: LineChart,  flag: "backtest" },
+      { label: "Monte Carlo",          to: "/analysis/monte-carlo",          icon: Sigma,      flag: "monteCarlo" },
+      { label: "Optimizer",            to: "/analysis/optimizer",            icon: Activity,   flag: "optimizer" },
+      { label: "Allocation Optimizer", to: "/analysis/allocation-optimizer", icon: Scale,      flag: "allocationOptimizer" },
+      { label: "Calculators",          to: "/tools/calculators",             icon: Calculator, flag: "calculators" },
+      { label: "Compare",              to: "/tools/compare",                 icon: GitCompare, flag: "backtest" },
     ],
   },
   {
     label: "Market",
     items: [
-      { label: "Screener", to: "/market/screener", icon: Layers,    flag: "marketData" },
-      { label: "News",     to: "/market/news",     icon: Newspaper, flag: "news" },
-      { label: "Calendar", to: "/market/calendar", icon: Calendar,  flag: "news" },
+      { label: "Screeners", to: "/market/screener", icon: Layers,    flag: "marketData" },
+      { label: "News",      to: "/market/news",     icon: Newspaper, flag: "news" },
+      { label: "Calendars", to: "/market/calendar", icon: Calendar,  flag: "news" },
+    ],
+  },
+  {
+    label: "Reference",
+    items: [
+      { label: "Stocks",              to: "/reference/stocks",     icon: TrendingUp, flag: "reference" },
+      { label: "Options",             to: "/reference/options",    icon: BarChart2,  flag: "reference" },
+      { label: "Retirement Accounts", to: "/reference/retirement", icon: PiggyBank,  flag: "reference" },
+      { label: "Estate Planning",     to: "/reference/estate",     icon: FileText,   flag: "reference" },
+      { label: "Taxes",               to: "/reference/taxes",      icon: Receipt,    flag: "reference" },
+      { label: "Guides",              to: "/reference",            icon: BookOpen,   flag: "reference" },
     ],
   },
 ];

@@ -1,0 +1,25 @@
+[package]
+name = "chrdfin-core"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "Native computation engine for chrdfin: backtest, Monte Carlo, optimization, statistics, calculators."
+
+[lib]
+name = "chrdfin_core"
+path = "src/lib.rs"
+
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+chrono = { workspace = true }
+rayon = "1.10"
+rand = "0.8"
+rand_distr = "0.4"
+statrs = "0.17"
+nalgebra = "0.33"
+
+[dev-dependencies]
+approx = "0.5"

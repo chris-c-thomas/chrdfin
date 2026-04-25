@@ -177,25 +177,40 @@ apps/desktop        -> all packages
 
 ## Feature Domains & Routes
 
-The platform is organized into feature domains, each isolated in its own route module. Domains are gated by feature flags in `@chrdfin/config`.
+The platform is organized into feature domains, each isolated in its own route module. Domains are gated by feature flags in `@chrdfin/config`. The Dashboard is the home page and sits outside the section taxonomy — it is rendered above all section groups in the sidebar and is always visible.
 
-| Domain | Route Path | Feature Flag | Status |
-|---|---|---|---|
-| Backtesting | `/analysis/backtest` | `backtest` | Phase 2-3 |
-| Monte Carlo | `/analysis/monte-carlo` | `monteCarlo` | Phase 4 |
-| Optimizer | `/analysis/optimizer` | `optimizer` | Phase 9 (deferred) |
-| Portfolio Tracker | `/tracking/portfolio` | `tracker` | Phase 5 |
-| Transactions | `/tracking/transactions` | `tracker` | Phase 5 |
-| Watchlists | `/tracking/watchlist` | `tracker` | Phase 5 |
-| Calculators | `/tools/calculators/*` | `calculators` | Phase 6 |
-| Comparison Tool | `/tools/compare` | `backtest` | Phase 10 |
-| Stock Screener | `/market/screener` | `marketData` | Phase 7 |
-| Ticker Detail | `/market/ticker/$symbol` | `marketData` | Phase 7 |
-| Options Chain | `/market/options/$symbol` | `marketData` | Phase 7 |
-| News Feed | `/market/news` | `news` | Phase 8 |
-| Calendar | `/market/calendar` | `news` | Phase 8 |
+Sidebar order (top → bottom): **Dashboard → Tracking → Analysis & Tools → Market → Reference.** Tracking precedes Analysis & Tools intentionally — the day-to-day power-user flow starts at "what do I own and how is it doing?" before reaching for backtesting/MC tooling. Reference sits at the bottom because it is read-only documentation rather than active workflow tooling.
 
-**Rule:** Domains never import from each other. Cross-domain data flows through Tauri commands and shared types in `@chrdfin/types`.
+The sidebar uses **plural labels** (`Portfolios`, `Watchlists`, `Screeners`, `Calendars`) for the multi-instance domains. Each plural label routes to a list of saved instances with a "Create" action; when more than one instance exists, the sidebar item gains an inline dropdown chevron so the user can jump straight to a saved instance. See `docs/technical-blueprint.md` § Multi-Instance Domains for the full UX evolution.
+
+| Domain | Sidebar label | Route Path | Feature Flag | Status |
+|---|---|---|---|---|
+| Dashboard | `Dashboard` | `/` | (always on) | Phase 0 placeholder; widget framework lands in Phase 11 |
+| Portfolios | `Portfolios` | `/tracking/portfolio` (+ `$id`) | `tracker` | Phase 5 — multiple per user, classified `tracked`/`backtest`/`model`/`watchlist`/`paper` |
+| Transactions | `Transactions` | `/tracking/transactions` | `tracker` | Phase 5 |
+| Watchlists | `Watchlists` | `/tracking/watchlist` (+ `$id`) | `tracker` | Phase 5 — multiple per user |
+| Backtesting | `Backtesting` | `/analysis/backtest` | `backtest` | Phase 2-3 |
+| Monte Carlo | `Monte Carlo` | `/analysis/monte-carlo` | `monteCarlo` | Phase 4 |
+| Optimizer | `Optimizer` | `/analysis/optimizer` | `optimizer` | Phase 9 — mean-variance, efficient frontier, risk parity |
+| Allocation Optimizer | `Allocation Optimizer` | `/analysis/allocation-optimizer` | `allocationOptimizer` | Phase 9 — rebalancing trades, tax-aware; pairs with Optimizer + Backtest |
+| Calculators | `Calculators` | `/tools/calculators/*` | `calculators` | Phase 6 |
+| Comparison Tool | `Compare` | `/tools/compare` | `backtest` | Phase 10 |
+| Screeners | `Screeners` | `/market/screener` (+ `$id`) | `marketData` | Phase 7 — multiple saved screener configs |
+| Ticker Detail | — | `/market/ticker/$symbol` | `marketData` | Phase 7 |
+| Options Chain | — | `/market/options/$symbol` | `marketData` | Phase 7 |
+| News | `News` | `/market/news` | `news` | Phase 8 — multiple saved feed configurations |
+| Calendars | `Calendars` | `/market/calendar` | `news` | Phase 8 — multiple saved calendar configurations |
+| Reference Library | `Stocks` / `Options` / `Retirement Accounts` / `Estate Planning` / `Taxes` / `Guides` | `/reference/*` | `reference` | Phase 12 — bundled curated guides |
+| Personal Research | — | (TBD) | `research` | Deferred; user-curated saved articles + notes (distinct from Reference Library) |
+| Paper Trading *(post-1.0)* | — | (TBD) | `paperTrading` | Post-v1.0 — see Trading Module |
+| Live Trading *(post-1.0)* | — | (TBD) | `liveTrading` | Post-v1.0 — broker integrations |
+| Bot Trading *(post-1.0)* | — | (TBD) | `botTrading` | Post-v1.0 — algorithmic execution |
+
+**Rule:** Domains never import from each other. Cross-domain data flows through Tauri commands and shared types in `@chrdfin/types`. The Dashboard is a strict consumer — its widgets read from existing domain query surfaces but never import from another domain's `routes/` directory.
+
+**Dashboard vision:** the home page will become a customizable widget grid covering markets overview, portfolio summary, recent backtests, accounts, news, and the earnings/economic calendar. Layout, widget selection, and refresh cadence are user-configurable and persisted in DuckDB (`app_settings.dashboard_layout`). See `docs/technical-blueprint.md` § Dashboard Module for the full spec.
+
+**Trading roadmap (post-1.0):** paper trading, live trading via broker integrations, and bot/algorithmic execution are explicitly **planned** for after the main application is stable. They are not in scope for the current phases but the data model, command surface, and UI shell are designed to accommodate them. See `docs/technical-blueprint.md` § Trading Module for the architecture targets.
 
 ---
 
@@ -216,6 +231,9 @@ pnpm lint                       # ESLint across all packages
 pnpm lint:fix                   # ESLint with autofix
 pnpm format                     # Prettier format
 pnpm format:check               # Prettier check
+
+# Generate the TanStack Router tree before standalone typecheck/lint on a fresh checkout:
+pnpm --filter desktop exec vite build  # produces apps/desktop/src/routeTree.gen.ts
 
 # Testing (TypeScript)
 pnpm test                       # Vitest across all packages
@@ -276,6 +294,7 @@ cargo fmt --check               # Format check
 - Use TanStack Router search params for shareable configurations.
 - Use TanStack Query for all Tauri command data fetching.
 - Use `@tauri-apps/api/event` for real-time event listeners (quotes, progress, sync).
+- React 19 has no global `JSX` namespace. For return-type annotations use `import { type JSX } from "react"`.
 
 ### Styling
 
@@ -284,6 +303,8 @@ cargo fmt --check               # Format check
 - Use CSS variables for design tokens defined in `@chrdfin/config`.
 - shadcn/ui components are the base. Extend via composition, not modification.
 - Use `cn()` utility (from `@chrdfin/ui/lib/utils`) for conditional class merging.
+- Do NOT set `html { font-size }` in `globals.css` — Tailwind utilities are rem-based and inherit the user-agent default (16px). Overriding it silently scales every utility.
+- Tailwind v4 has no `text-md` utility (scale jumps from `text-base` 16px to `text-lg` 18px). Use the standard `xs/sm/base/lg/xl/2xl` scale.
 
 ### Testing
 
@@ -408,7 +429,7 @@ Start with Tiingo free tier during development. Tiingo Power ($10/mo) for produc
 - Do NOT use default exports. Use named exports everywhere.
 - Do NOT add CSS files. Use Tailwind utility classes only.
 - Do NOT use `@backtest/*` as a package scope. The correct scope is `@chrdfin/*`.
-- Do NOT implement broker integrations, live trading, or order execution.
+- Do NOT implement broker integrations, live trading, paper trading, or bot/algorithmic execution **during the current development phases** (0 through 12). These capabilities are explicitly part of the long-term roadmap (post-v1.0) and the data model, command surface, and UI shell are designed to accommodate them — but writing any actual trading code, broker adapter, or order-routing logic before v1.0 is shipped and stable is out of scope. See `docs/technical-blueprint.md` § Trading Module for the architecture targets.
 - Do NOT store API keys in the database or in plaintext files. Use environment variables (dev) or OS keychain (prod).
 - Do NOT use Next.js, server components, API routes, or any server-side rendering patterns. This is a Tauri SPA.
 - Do NOT use Drizzle ORM, PostgreSQL, Neon, or any external database. DuckDB is the database.
@@ -418,3 +439,13 @@ Start with Tiingo free tier during development. Tiingo Power ($10/mo) for produc
 - Do NOT use Comlink. There are no WebWorkers to communicate with.
 - Do NOT use `localStorage` or `sessionStorage`. Use DuckDB (via Tauri commands) for persistent state.
 - Do NOT panic in Rust computation code. Use `Result<T, E>` everywhere.
+
+---
+
+## Common Gotchas
+
+- **Tauri `generate_handler!` paths:** Use full module paths (`commands::system::foo`), not re-exported names — the macro looks for the synthetic `__cmd__<name>` helper next to the function definition.
+- **TanStack Router `redirect()` + Zod `.default()`:** Routes whose `validateSearch` has default-bearing fields require `search: Schema.parse({})` on programmatic redirects.
+- **Shared library tsconfigs must not declare `rootDir`** — it resolves relative to the file declaring it, breaking every consuming package. Per-package tsconfigs override if needed.
+- **Tauri icons:** `pnpm exec tauri icon <source.png>` (run from `apps/desktop`) generates the full icon set from a single 1024×1024 source PNG.
+- **Cargo workspace `resolver = "3"`** is required for edition 2024 (already locked in `Cargo.toml`).

@@ -117,7 +117,8 @@ export interface StrategyContext {
 The following files are **identical to v2.0** and are not reproduced here to avoid duplication. Refer to the v2.0 `type-definitions-reference.md` for their complete contents:
 
 - `market-data.ts` — DailyPrice, AssetMetadata, RealTimeQuote, OptionsChain, FundamentalData, etc.
-- `portfolio.ts` — PortfolioAllocation, PortfolioConfig, PortfolioContext, PortfolioType
+- `portfolio.ts` — PortfolioAllocation, PortfolioConfig, PortfolioContext, PortfolioType.
+  - `PortfolioType` extends to `"backtest" | "tracked" | "model" | "watchlist" | "paper"` — `paper` is reserved for the post-v1.0 paper-trading domain (see `docs/technical-blueprint.md` § Trading Module). The DuckDB column is `VARCHAR` so additional types can be added without a migration.
 - `backtest.ts` — BacktestConfig, BacktestResult, EquityCurvePoint, DrawdownPoint, etc.
 - `monte-carlo.ts` — MonteCarloConfig, MonteCarloResult, HistogramBin (note: `maxMCIterations` in `@chrdfin/config` is now 1,000,000)
 - `tracker.ts` — Holding, HoldingWithQuote, Transaction, Watchlist, PortfolioSummary, TransactionInput

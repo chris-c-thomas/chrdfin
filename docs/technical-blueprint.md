@@ -12,7 +12,7 @@
 | **Computation** | Native Rust (multi-threaded via Rayon) |
 | **Data Storage** | DuckDB (embedded, columnar) |
 | **Deployment** | Desktop application (macOS, Linux, Windows) |
-| **Platform Scope** | Backtesting, Monte Carlo, Portfolio Tracking, Optimization, Calculators, Market Data, News, Research |
+| **Platform Scope** | Dashboard, Backtesting, Monte Carlo, Portfolio Tracking, Optimization, Allocation Optimization, Calculators, Market Data, News, Reference Library, Research, future Trading roadmap (paper / live / bot) |
 
 ---
 
@@ -28,11 +28,16 @@
 - [Computation Engine](#computation-engine)
 - [Backtesting Engine](#backtesting-engine)
 - [Monte Carlo Simulation Engine](#monte-carlo-simulation-engine)
+- [Dashboard Module](#dashboard-module)
+- [Multi-Instance Domains](#multi-instance-domains)
 - [Portfolio Tracking Module](#portfolio-tracking-module)
 - [Portfolio Optimization Module](#portfolio-optimization-module)
+- [Allocation Optimizer Module](#allocation-optimizer-module)
 - [Financial Calculators Module](#financial-calculators-module)
-- [Market Data & Screener Module](#market-data--screener-module)
-- [News & Research Module](#news--research-module)
+- [Market Data & Screeners Module](#market-data--screeners-module)
+- [News & Calendars Module](#news--calendars-module)
+- [Reference Library Module](#reference-library-module)
+- [Trading Module](#trading-module)
 - [Frontend Architecture](#frontend-architecture)
 - [Tauri Command Layer](#tauri-command-layer)
 - [Development Phases](#development-phases)
@@ -58,13 +63,18 @@ Core capabilities, delivered incrementally:
 
 1. **Portfolio Backtesting** — Deterministic historical backtesting with configurable rebalancing strategies across equities, ETFs, mutual funds, and cash equivalents with 30+ years of data.
 2. **Monte Carlo Simulation** — Stochastic forward-looking probabilistic analysis using parametric (GBM), historical bootstrap, and block bootstrap methods. Native Rust with Rayon enables 1M+ iterations.
-3. **Portfolio Tracking** — Manual position entry with holdings, transactions, cost basis, and real-time P&L. Broker integrations (read-only) added later.
+3. **Portfolio Tracking** — Manual position entry with holdings, transactions, cost basis, and real-time P&L. **Multiple portfolios per user**, classified as `tracked` (real holdings), `backtest` (test portfolios), `model` (target allocations), `paper` (paper-trading), or named `watchlist` lists. Broker integrations (read-only) added later.
 4. **Portfolio Optimization** — Mean-variance optimization, efficient frontier visualization, risk parity, Black-Litterman, and factor-based allocation tools.
-5. **Financial Calculators** — Compound growth, retirement planning, withdrawal strategy comparison, tax-loss harvesting simulation, options payoff diagrams, risk/reward calculators.
-6. **Market Data & Screener** — Real-time (during market hours) and historical price data for equities, ETFs, mutual funds, and options chains. Screening and filtering tools.
-7. **News & Research** — Aggregated financial news feeds, earnings calendars, economic event calendars, and a personal research reference library.
+5. **Allocation Optimization** — A focused tool for optimizing target allocations and rebalancing trades against backtest history, tax constraints, and a chosen rebalancing strategy. Pairs with the Optimizer and the Backtest engine.
+6. **Financial Calculators** — Compound growth, retirement planning, withdrawal strategy comparison, tax-loss harvesting simulation, options payoff diagrams, risk/reward calculators.
+7. **Market Data & Screeners** — Real-time (during market hours) and historical price data for equities, ETFs, mutual funds, and options chains. **Multiple saved screener configurations** per user.
+8. **News & Calendars** — Aggregated financial news feeds, earnings calendars, and economic event calendars. **Multiple saved feed and calendar configurations** per user.
+9. **Reference Library** — Bundled guides on Stocks, Options, Retirement Accounts, Estate Planning, Taxes, and other financial topics. Read-only knowledge base; expands as the platform matures.
+10. **Personal Research** — A user-curated research library (saved articles, notes, bookmarks). Distinct from the curated Reference Library.
+11. **Customizable Dashboard** — A widget-based home screen pulling from every other domain. Layout, widget selection, and refresh cadence are user-configurable.
+12. **Trading (post-1.0 roadmap)** — Paper trading, live trading via broker integrations, and bot/algorithmic trading are explicitly **planned** for a phase after the main application is built and stable. They are not in scope for the current phases but the data model, command surface, and UI shell are designed to accommodate them. See [Trading Module](#trading-module).
 
-The architecture prioritizes computational power, local data sovereignty, and the keyboard-driven, information-dense experience that professional financial workstations deliver. No live trading or order execution is in scope.
+The architecture prioritizes computational power, local data sovereignty, and the keyboard-driven, information-dense experience that professional financial workstations deliver. Live, paper, and bot trading are deferred to a post-1.0 phase — they are explicitly part of the long-term plan, not silently excluded.
 
 ---
 
@@ -78,12 +88,16 @@ Each feature domain is a self-contained vertical that depends on shared horizont
 ┌─────────────────────────────────────────────────────────────────────┐
 │                       chrdfin Platform Shell                        │
 │  (App Layout, Navigation, Command Palette, Global Search, Themes)   │
+├─────────────────────────────────────────────────────────────────────┤
+│           Customizable Dashboard (widgets, home screen)             │
 ├──────────┬──────────┬──────────┬──────────┬──────────┬──────────────┤
-│ Backtest │ Monte    │ Portfolio│ Portfolio │Financial │ Market Data  │
-│ Engine   │ Carlo    │ Tracker  │ Optimizer │Calculators│ & Screener  │
-│          │ Sim      │          │           │          │              │
+│ Backtest │ Monte    │ Portfolio│ Optimizer │Financial │ Market Data  │
+│ Engine   │ Carlo    │ Tracker  │ + Alloc   │Calculators│ & Screeners │
+│          │ Sim      │          │ Optimizer │          │              │
 ├──────────┴──────────┴──────────┴──────────┴──────────┴──────────────┤
-│                      News & Research Feeds                           │
+│           News & Calendars  │  Reference Library  │  Research        │
+├─────────────────────────────────────────────────────────────────────┤
+│   Trading Module (post-1.0): Paper · Live (broker) · Bot · Alerts    │
 ├─────────────────────────────────────────────────────────────────────┤
 │                  Shared Infrastructure Layer                         │
 │  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐              │
@@ -103,13 +117,18 @@ Each feature domain is a self-contained vertical that depends on shared horizont
 
 | Domain | Description | Data Dependencies | Compute Requirements |
 |---|---|---|---|
+| **Dashboard** | Widget-based home screen aggregating signals from every other domain | All domain queries via the shared layer | Light (composition + cached query results) |
 | **Backtesting** | Historical portfolio simulation with rebalancing strategies | Daily prices, dividends, macro series | Heavy (native Rust, multi-threaded) |
 | **Monte Carlo** | Forward-looking probabilistic simulation | Historical returns, macro series | Heavy (native Rust, Rayon parallelism) |
-| **Portfolio Tracker** | Holdings, transactions, cost basis, P&L, allocation views | Daily prices, user portfolio data | Light (Rust query + TS rendering) |
+| **Portfolio Tracker** | Multiple portfolios (tracked, backtest, model, paper, watchlist), holdings, transactions, cost basis, P&L | Daily prices, user portfolio data | Light (Rust query + TS rendering) |
 | **Optimizer** | Mean-variance, efficient frontier, risk parity, Black-Litterman | Daily prices, covariance matrices | Medium-Heavy (native Rust) |
+| **Allocation Optimizer** | Optimize target allocations and rebalancing trades for backtests, real portfolios, and tax constraints | Daily prices, holdings, target weights, tax lot data | Medium (native Rust; reuses optimizer + backtest internals) |
 | **Calculators** | Compound growth, retirement, withdrawals, options payoff, tax | User inputs, macro series | Light (Rust) |
-| **Market Data** | Price quotes, charts, options chains, screening | Real-time + historical prices, fundamentals | Light (Rust query layer) |
-| **News & Research** | Financial news aggregation, earnings calendar, economic calendar | External news APIs, earnings data | Light (Rust HTTP + TS rendering) |
+| **Market Data & Screeners** | Price quotes, charts, options chains, multi-instance screener configurations | Real-time + historical prices, fundamentals | Light (Rust query layer) |
+| **News & Calendars** | Multi-instance news feeds, earnings calendars, economic event calendars | External news APIs, earnings data | Light (Rust HTTP + TS rendering) |
+| **Reference Library** | Bundled curated guides on Stocks, Options, Retirement Accounts, Estate Planning, Taxes, etc. | Static content shipped with the app (Markdown / MDX) | Light (no compute) |
+| **Personal Research** | User-curated saved articles, notes, bookmarks (distinct from Reference Library) | User content + linked tickers | Light (TS query + persistence) |
+| **Trading** *(post-1.0)* | Paper trading, live trading via broker integrations, bot/algorithmic execution | Real-time quotes, order book, broker APIs | Variable (per strategy); see Trading Module |
 
 ### Cross-Domain Interactions
 
@@ -118,8 +137,12 @@ Domains share data through the Rust backend's query layer but never call each ot
 - Portfolio Tracker holdings feed into Backtest as a starting allocation.
 - Backtest results feed into Monte Carlo as a historical return series.
 - Optimizer produces target allocations that can be compared to Tracker's current allocation.
+- **Allocation Optimizer reads target weights from any portfolio (`tracked`, `backtest`, `model`, `paper`) and produces a set of optimized rebalancing trades, optionally accounting for tax lots and turnover constraints.** Outputs can feed back into Backtest for what-if validation.
 - Market Data provides the real-time prices that Tracker uses for current P&L.
-- News feed items can be linked to tickers in the Tracker's watchlist.
+- News feed items can be linked to tickers in any of the Tracker's watchlists.
+- Dashboard widgets read from every domain's query surface but contribute nothing back — it is strictly a consumer, never a producer. Each widget is a thin React component bound to a TanStack Query result; widget code never imports from another domain's feature code.
+- Reference Library is a read-only consumer of bundled content; it never reads from or writes to other domains.
+- Trading Module (post-1.0) plugs into Tracker for portfolio context, Market Data for execution-time quotes, and the Optimizer / Allocation Optimizer for strategy inputs. It writes back trade fills as Transactions.
 
 These flows are mediated by shared types and Tauri commands, not by direct inter-module coupling. A `PortfolioContext` type in `@chrdfin/types` serves as the common data contract.
 
@@ -569,16 +592,86 @@ With native Rust + Rayon on target hardware:
 
 ---
 
+## Dashboard Module
+
+The dashboard is the application's home screen and the route a user lands on after launch. It is rendered at `/` and is the only nav item in the sidebar that lives outside the four domain section groups — it is conceptually the entry point, not a domain.
+
+### Vision
+
+A customizable grid of widgets giving the user an at-a-glance overview of every other domain. Layout (which widgets, where, what size), refresh cadence, and per-widget configuration (e.g. which tickers a "Market Overview" widget tracks) are all user-configurable and persisted in DuckDB so the dashboard restores between sessions.
+
+### Initial widget set
+
+These are the targets for the first iteration of the widget framework. Every widget is a thin React component bound to a TanStack Query result reading from existing Tauri commands; no domain feature code is duplicated.
+
+| Widget | Reads from | Notes |
+|---|---|---|
+| **Portfolio Summary** | `list_portfolios`, `list_holdings`, `get_quotes` | Total value, day change, allocation breakdown, top movers across selected portfolios. |
+| **Market Overview** | `get_quotes` (watchlist), `get_macro_series` | Major indices, sector performance, configurable watchlist quotes during market hours. |
+| **Recent Backtests** | `simulation_results` query | Last-run portfolio simulations with CAGR, max drawdown, and Sharpe summary. |
+| **Accounts** | `list_portfolios`, `list_holdings` | Aggregated balances across linked accounts and tracked portfolios. |
+| **News** | `get_news` | Top headlines and ticker-tagged stories from Tiingo News and curated RSS feeds. |
+| **Earnings & Calendar** | `earnings_calendar` query, `get_macro_series` | Upcoming earnings releases and economic events for tracked tickers. |
+| **Quick Actions** | (none) | Buttons to launch a new backtest, create a portfolio, search a ticker, etc. |
+
+### Architecture constraints
+
+1. **Strictly a consumer.** Dashboard widgets only read from existing domain query surfaces. They never own data, never import from another domain's `routes/` directory, and never bypass the shared Tauri command layer.
+2. **Widget framework precedes widgets.** A small `<DashboardGrid>` + `<Widget>` system in `apps/desktop/src/dashboard/` (or a future `@chrdfin/dashboard` package) handles drag/drop, resize, and config persistence before any widget ships.
+3. **Layout persisted to DuckDB.** The `app_settings` table stores layout state under a `dashboard_layout` key. No localStorage. Cross-machine sync via the existing Parquet export/import path.
+4. **Phase 0 placeholder.** Until the framework lands, the route renders an intent placeholder listing the planned widgets and the Phase 0 IPC health check.
+5. **Always visible in the sidebar.** Unlike domain nav items, the Dashboard nav entry has no feature flag — it is the home page and is rendered above all section groups in `apps/desktop/src/components/shell/sidebar.tsx`.
+
+### Implementation phase
+
+Slotted as **Phase 11** below — after the core domains have shipped enough commands and data shapes for the widgets to bind to. The widget framework can be moved earlier if the placeholder home view starts blocking real workflows; the trade-off is that early widgets would have less to display.
+
+---
+
+## Multi-Instance Domains
+
+Several domains in chrdfin host *multiple named instances per user*, not single-page experiences. The sidebar surfaces these with **plural** labels (`Portfolios`, `Watchlists`, `Screeners`, `Calendars`) to make the multi-instance nature visible from the entry point.
+
+### Affected domains
+
+| Domain | Sidebar label | Instance examples |
+|---|---|---|
+| Portfolios | `Portfolios` | A real `tracked` book; multiple `backtest` test portfolios; several `model` target allocations; one or more `paper` portfolios (post-1.0) |
+| Watchlists | `Watchlists` | "Tech megacaps", "Dividend aristocrats", "AI/ML names", "Earnings this week" — each a named ticker list |
+| Screeners | `Screeners` | "Small-cap value with FCF growth", "High-yield ETFs", "Reasonable P/E tech" — saved filter sets |
+| Calendars | `Calendars` | "My earnings calendar" (filtered to held tickers), "Macro calendar" (FOMC, CPI, NFP), "IPO watch", "Splits & dividends" |
+| News | `News` | Multiple curated feed configurations (e.g. "Macro only", "Held tickers only", "Sector deep dives") |
+
+### UX evolution
+
+- **Phase ≤ N (initial ship):** Each plural sidebar item routes to a *list page* of the user's saved instances, with a primary "Create" action and links to detail views.
+- **Phase ≤ N + 1 (refinement):** When a domain has more than one saved instance, the sidebar item gains a **dropdown chevron** that expands inline to show the saved instances. Clicking the parent label still navigates to the list page; clicking an expanded child navigates straight to that instance.
+- **Phase ≤ N + 2 (power-user features):** Drag-to-reorder instances, pin favorites to the dashboard, group by tag.
+
+### Data model
+
+Instance multiplicity is already in the schema — every multi-instance domain has its own table (`portfolios`, `watchlists`, `news_articles` queryable by saved filter, etc.) keyed by `id` UUID. The `portfolio_type` column distinguishes portfolio classes (`tracked`, `backtest`, `model`, `watchlist`, `paper`).
+
+### Cross-instance interactions
+
+- The Backtest engine accepts any `portfolio_id` as a starting allocation (any classification).
+- The Allocation Optimizer can target any `portfolio_id` for rebalancing trades.
+- The Dashboard's Portfolio Summary widget supports per-instance selection.
+- Watchlists feed the News Feed and Calendar instances as ticker filters.
+
+---
+
 ## Portfolio Tracking Module
 
 ### Core Features
 
-1. **Holdings Management:** Add/edit/remove positions with cost basis. Multiple lots per ticker.
-2. **Transaction History:** Full audit trail of buys, sells, dividends, splits, and transfers.
-3. **Real-Time P&L:** Updated via Tauri event-driven quote polling during market hours.
-4. **Allocation View:** Breakdown by asset class, sector, and holding with drift analysis.
-5. **Performance History:** Computed from holdings + daily_prices via DuckDB.
-6. **Watchlists:** Real-time quote table with configurable columns.
+1. **Multiple Portfolios:** Users create as many portfolios as they need, classified by `portfolio_type` — `tracked` (real holdings), `backtest` (test portfolios), `model` (target allocations only, no holdings), `watchlist` (named ticker lists, no holdings), `paper` (paper-trading; post-1.0). The schema column is `VARCHAR` so additional types can be appended without a migration.
+2. **Holdings Management:** Add/edit/remove positions with cost basis. Multiple lots per ticker. Scoped per portfolio.
+3. **Transaction History:** Full audit trail of buys, sells, dividends, splits, and transfers per portfolio.
+4. **Real-Time P&L:** Updated via Tauri event-driven quote polling during market hours, per portfolio.
+5. **Allocation View:** Breakdown by asset class, sector, and holding with drift analysis.
+6. **Performance History:** Computed from holdings + daily_prices via DuckDB.
+7. **Multiple Watchlists:** Real-time quote table with configurable columns. Users save many watchlists with arbitrary tickers; each is its own row in `watchlists`.
 
 ---
 
@@ -592,6 +685,43 @@ With native Rust + Rayon on target hardware:
 | Black-Litterman | Market equilibrium + investor views | Phase 9 |
 | Maximum Sharpe | Tangency portfolio | Phase 9 |
 | Minimum Volatility | Global minimum variance portfolio | Phase 9 |
+
+The Optimizer answers *"given a universe of assets and a risk model, what's the optimal weight vector?"*. For *"given a current portfolio and a target weight vector, what trades should I make?"* see the [Allocation Optimizer Module](#allocation-optimizer-module).
+
+---
+
+## Allocation Optimizer Module
+
+A focused tool that pairs with both the Optimizer (which produces target weights) and the Backtester (which validates the resulting series). The sidebar presents it as a sibling of the Optimizer in the **Analysis & Tools** section.
+
+### Purpose
+
+Given a current portfolio (any `portfolio_type`) and a target allocation, produce an optimized set of rebalancing trades that minimizes a configurable cost function:
+
+- Tracking error vs. target weights
+- Realized capital gains tax (per `lot` selection method)
+- Transaction costs and slippage (configurable)
+- Turnover (percent of portfolio traded)
+
+### Inputs
+
+| Input | Source |
+|---|---|
+| Current holdings | `holdings` table for the selected `portfolio_id` |
+| Target weights | Output of the Optimizer, a `model` portfolio, or manual entry |
+| Tax-lot data | `transactions` table with FIFO/LIFO/specific-ID lot selection |
+| Constraints | Min/max trade size, no-short, no-buy-X-after-sell wash-sale window, etc. |
+
+### Outputs
+
+- Recommended trade list (ticker, side, shares, expected proceeds/cost)
+- Estimated realized gain/loss after the trades
+- Resulting drift from target weights
+- Optional: feed the post-rebalance portfolio back into the Backtest engine for what-if validation
+
+### Phase
+
+Lands alongside the Optimizer in **Phase 9**. The two share matrix utilities (`chrdfin-core::matrix`) and the optimization solver.
 
 ---
 
@@ -613,19 +743,35 @@ All calculators implemented as pure Rust functions in `chrdfin-core::calculators
 
 ---
 
-## Market Data & Screener Module
+## Market Data & Screeners Module
 
-The screener is powered by DuckDB's analytical query engine — filtering and sorting across thousands of rows with multiple predicates is a columnar database's core strength.
+The screener engine is powered by DuckDB's analytical query engine — filtering and sorting across thousands of rows with multiple predicates is a columnar database's core strength.
+
+The sidebar exposes this domain as **Screeners** (plural). Users save multiple named screener configurations — each a row in a `saved_screeners` table (added when the domain ships). The sidebar item routes to a list of saved screeners with a "New screener" action; the dropdown UX (per the Multi-Instance Domains section) opens individual screeners directly.
 
 ---
 
-## News & Research Module
+## News & Calendars Module
+
+The sidebar exposes two plural items — **News** and **Calendars** — backed by per-instance saved configurations.
 
 ### News Feed Architecture
 
 1. **Tiingo News API:** Fetched by Rust backend, stored in DuckDB.
 2. **RSS Feeds:** Fetched directly by Rust backend (no CORS issues).
 3. **Filtering:** By ticker, source, date range, bookmark status.
+4. **Saved feed configurations:** Each combination of filters is a named `news_feed` instance. Examples: "Macro only", "Held tickers only", "Sector deep dives".
+
+### Calendars
+
+| Calendar type | Source |
+|---|---|
+| Earnings | `earnings_calendar` table, filtered by ticker scope |
+| Economic events | FRED + curated event list (FOMC, CPI, NFP, jobs, GDP) |
+| IPO watch | Tiingo / Polygon IPO calendar |
+| Dividends & splits | Tiingo corporate actions |
+
+Each saved calendar is a named filter configuration over the underlying tables.
 
 ### Curated RSS Feed Sources
 
@@ -638,6 +784,59 @@ The screener is powered by DuckDB's analytical query engine — filtering and so
 | Seeking Alpha | Analysis, stock picks |
 | Federal Reserve | Fed statements, minutes |
 | Calculated Risk | Housing, macro |
+
+---
+
+## Reference Library Module
+
+A bundled, curated knowledge base distinct from the user-curated Personal Research domain. The Reference Library ships read-only guides written and maintained by the project; users consume but do not edit them.
+
+### Initial topic set
+
+| Topic | Coverage |
+|---|---|
+| Stocks | Equity instruments, order types, corporate actions, dividends, splits, ADRs, ETFs, mutual funds, how chrdfin models each |
+| Options | Calls, puts, multi-leg strategies, Greeks (delta/gamma/theta/vega/rho), implied volatility, assignment, expiration, tax treatment |
+| Retirement Accounts | Traditional IRA, Roth IRA, 401(k), 403(b), 457, HSA, SEP, SIMPLE, Solo 401(k); contribution limits, RMDs, conversions, withdrawals |
+| Estate Planning | Wills, trusts, beneficiary designations, gift and estate tax exemptions, step-up in basis, multi-generational portfolio modelling |
+| Taxes | Capital gains (short vs long), wash sales, qualified vs ordinary dividends, tax-loss harvesting, lot selection (FIFO, LIFO, specific ID), AMT, state-specific notes |
+
+The list is open-ended; new topics can be added without changing the navigation surface beyond appending an item to the Reference section.
+
+### Architecture
+
+- Content is shipped as **bundled Markdown / MDX files** under `apps/desktop/src/reference/` (or a future `@chrdfin/reference` package). No DuckDB rows for content.
+- Cross-links to live data are allowed: a guide on options can embed a live IV chart for a user-selected ticker via the same chart components used in the Market Data domain.
+- Search across all reference content lives in the global command palette under a `Reference` group.
+- Versioning travels with the app — content updates ship in app releases, not at runtime.
+
+### Phase
+
+Implementation lands in **Phase 12** alongside or just after the dashboard widget framework. Initial content can be stubbed and filled in over time; the Phase 12 deliverable is the shell + search + first iteration of each topic.
+
+---
+
+## Trading Module *(post-1.0)*
+
+The trading domain is **planned but explicitly deferred** until the main application is built and stable. It is documented here so the data model, command surface, and UI shell stay forward-compatible — not because it is in the immediate scope.
+
+### Three trading modes
+
+1. **Paper trading.** Simulated order execution against real-time market quotes. No real money, no broker. Uses the existing `paper` portfolio classification. Surfaces realistic fills, partial fills, slippage, and rejection scenarios.
+2. **Live trading.** Real order routing through one or more broker integrations. Read-only broker connectivity ships first (account balances, positions, transactions) and write capabilities (order placement, cancellation, modification) are added behind explicit per-account opt-in and additional security gates.
+3. **Bot / algorithmic trading.** User-defined or library-provided strategies running as background tasks in the Rust backend. Strategies can fire against either paper or live accounts; safety limits, kill switches, and audit logs are mandatory.
+
+### Architecture targets
+
+- **Strategy harness in `chrdfin-core::trading`** with deterministic backtest mode (reuses the Backtest engine's daily stepping).
+- **Order book schema** in DuckDB: `orders`, `order_fills`, `strategy_runs`, with foreign keys to `portfolios` and `transactions`.
+- **Broker adapters** behind a Rust trait, mirroring the data-provider adapter pattern (one trait, many implementations).
+- **UI integration:** orders, fills, and strategy runs surface in the Tracker section; bots get a dedicated "Strategies" sub-section under Tracking.
+- **Security:** broker credentials in OS keychain. No credentials in DuckDB. Explicit confirmation dialogs for live order placement above a threshold.
+
+### Phase
+
+Implementation begins after the **stable v1.0 release**. The exact phase numbering is intentionally left open — paper trading may land first as Phase 13, live trading as Phase 14, bot trading as Phase 15, but the order can shift based on user demand.
 
 ---
 
@@ -727,16 +926,20 @@ The Tauri command layer replaces REST API routes. Each command is a `#[tauri::co
 | 2 | Computation Core | 2-3 weeks | Native Rust backtest engine, Rayon parallelism |
 | 3 | Backtest UI | 2-3 weeks | Portfolio builder, backtest form, results dashboard |
 | 4 | Monte Carlo Engine + UI | 2-3 weeks | MC simulation (3 methods), fan chart, distributions |
-| 5 | Portfolio Tracker | 2-3 weeks | Holdings, transactions, real-time P&L, watchlists |
+| 5 | Portfolio Tracker | 2-3 weeks | Multiple portfolios (tracked/backtest/model/watchlist), holdings, transactions, real-time P&L, multiple watchlists |
 | 6 | Financial Calculators | 2-3 weeks | All calculators with save/load |
-| 7 | Market Data & Screener | 2-3 weeks | Ticker detail, screener, options chain |
-| 8 | News & Research | 1-2 weeks | News feed, earnings calendar, economic calendar |
-| 9 | Portfolio Optimization | 2-3 weeks | Mean-variance, efficient frontier, risk parity |
+| 7 | Market Data & Screeners | 2-3 weeks | Ticker detail, multiple saved screeners, options chain |
+| 8 | News & Calendars | 1-2 weeks | Multiple news feed configurations, multiple calendar configurations, earnings, economic |
+| 9 | Portfolio Optimization | 2-3 weeks | Optimizer (mean-variance, efficient frontier, risk parity) and Allocation Optimizer (rebalancing trades, tax-aware) |
 | 10 | Polish & Distribution | 2-3 weeks | Command palette, performance, packaging, auto-update |
+| 11 | Customizable Dashboard | 2-3 weeks | `<DashboardGrid>` widget framework with drag/drop/resize, layout persisted to DuckDB, initial widget set. Replaces the Phase 0 placeholder home view. |
+| 12 | Reference Library | 2-3 weeks | Bundled MDX content for Stocks, Options, Retirement Accounts, Estate Planning, Taxes; cross-links to live data; command palette search |
+| **Stable v1.0 release** | — | — | All of the above shipping reliably; no live trading until 1.0 is stable |
+| 13+ | Trading (post-1.0) | TBD | Paper trading → live broker integration → bot/algorithmic execution. Each is its own phase; order can shift based on demand. |
 
-**Total estimated timeline: 20-28 weeks** (5-7 months at 15-20 hrs/week)
+**Total estimated timeline: 24-34 weeks to v1.0** (6-8.5 months at 15-20 hrs/week). Trading phases (13+) are intentionally unscheduled.
 
-> Phases 0-4 are the core delivery. Phases 5-10 can be reordered or parallelized.
+> Phases 0-4 are the core delivery. Phases 5-12 can be reordered or parallelized; Phase 11 (Dashboard) depends on read-side commands shipped by Phases 1, 5, 7, and 8. Phase 13+ (Trading) does not begin until v1.0 is shipped and stable.
 
 ### Phase 0: Foundation & Tooling
 

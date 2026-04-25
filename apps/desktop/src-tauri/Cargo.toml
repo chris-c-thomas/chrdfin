@@ -1,0 +1,33 @@
+[package]
+name = "chrdfin-desktop"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "chrdfin desktop application — Tauri v2 backend."
+
+[lib]
+name = "chrdfin_desktop_lib"
+# `staticlib` is intentionally omitted. Tauri v2 desktop builds only need
+# `cdylib` (for the dynamic library Tauri loads at runtime) and `rlib` (for
+# the binary in `main.rs` to link against). `staticlib` produces a
+# multi-hundred-MB `.a` archive that is the largest single artifact in the
+# build and was causing CI runners to exhaust disk. Add it back only if a
+# specific packaging target genuinely requires a static archive.
+crate-type = ["cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+tauri-plugin-shell = "2"
+chrdfin-core = { path = "../../../crates/chrdfin-core" }
+duckdb = { version = "1", features = ["bundled"] }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+chrono = { workspace = true }
+tokio = { version = "1", features = ["full"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }

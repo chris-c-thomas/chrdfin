@@ -10,9 +10,9 @@ The goal is simple: do not invent patterns when patterns already exist. Every ar
 
 ## What is chrdfin?
 
-A personal financial intelligence desktop application: portfolio backtesting, Monte Carlo simulation, portfolio tracking, optimization, calculators, market data, screener, and news. Built as a Tauri v2 native desktop app — **not** a web app — with a Vite + React 19 SPA frontend and a Rust computation/storage backend using DuckDB.
+A personal financial intelligence desktop application: a customizable widget-based dashboard plus multi-instance portfolio tracking (`tracked` / `backtest` / `model` / `paper` / `watchlist`), portfolio backtesting, Monte Carlo simulation, portfolio and allocation optimization, financial calculators, market data, multiple screeners, news and calendars, and a bundled reference library (Stocks, Options, Retirement, Estate, Taxes). Built as a Tauri v2 native desktop app — **not** a web app — with a Vite + React 19 SPA frontend and a Rust computation/storage backend using DuckDB. A trading roadmap (paper → live → bot) is explicitly planned for **after v1.0 ships and is stable**.
 
-Single-user. Personal use. No live trading. No multi-user concerns. Open-source intent.
+Single-user. Personal use. No multi-user concerns. Open-source intent. Trading (paper, live, bot) is on the long-term roadmap but **deferred until v1.0 is stable** — current phases (0-12) explicitly do not implement order routing, broker integrations, or algorithmic execution.
 
 The platform aesthetic is Bloomberg Terminal: dense, tabular, information-rich, no decoration.
 
@@ -152,7 +152,7 @@ These overrides apply regardless of task. They appear in `CLAUDE.md` and individ
 ### Scope discipline
 
 - **Never** add features outside the current phase's deliverable list without explicit approval.
-- **Never** implement broker integrations, live trading, or order execution.
+- **Never** implement broker integrations, live trading, paper trading, or bot/algorithmic execution during the current development phases (0-12). These are part of the post-v1.0 trading roadmap; do not start writing them until v1.0 ships and is stable. The data model, command surface, and UI shell stay forward-compatible — see `docs/technical-blueprint.md` § Trading Module.
 
 ---
 
