@@ -240,6 +240,13 @@ src-tauri/.tauri/
 *.sig
 *.asc
 
+# Force-include the Tauri icon set. The macOS `Icon?` rule above matches
+# the lowercase `icons/` directory under case-insensitive filesystems
+# (default on APFS), which would otherwise hide the icon files that
+# tauri::generate_context!() needs at compile time.
+!apps/desktop/src-tauri/icons/
+!apps/desktop/src-tauri/icons/**
+
 # Native build and toolchain byproducts
 *.o
 *.obj
