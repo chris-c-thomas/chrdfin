@@ -1,0 +1,1405 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>chrdfin — Financial Intelligence Platform</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <style type="text/tailwindcss">
+    @theme {
+      --color-surface-0: #09090b;
+      --color-surface-1: #0f0f11;
+      --color-surface-2: #18181b;
+      --color-surface-3: #1c1c1e;
+      --color-border-subtle: #27272a;
+      --color-border-muted: #1c1c1e;
+      --color-text-primary: #fafafa;
+      --color-text-secondary: #a1a1aa;
+      --color-text-muted: #71717a;
+      --color-accent: #3b82f6;
+      --color-gain: #22c55e;
+      --color-loss: #ef4444;
+      --color-amber: #f59e0b;
+    }
+  </style>
+  <style>
+    * {
+      font-variant-numeric: tabular-nums;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+
+    .mono {
+      font-family: 'SF Mono', 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+    }
+
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: var(--color-surface-0);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--color-border-subtle);
+      border-radius: 3px;
+    }
+
+    .nav-item.active {
+      border-left: 2px solid var(--color-accent);
+      background: rgba(59, 130, 246, 0.05);
+    }
+
+    .nav-item:not(.active) {
+      border-left: 2px solid transparent;
+    }
+
+    .nav-item:hover:not(.active) {
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .sparkline-up {
+      color: var(--color-gain);
+    }
+
+    .sparkline-down {
+      color: var(--color-loss);
+    }
+
+    table tbody tr:nth-child(even) {
+      background: rgba(255, 255, 255, 0.015);
+    }
+
+    table tbody tr:hover {
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .metric-cell {
+      min-width: 100px;
+    }
+
+    .sidebar-collapsed .sidebar-label {
+      display: none;
+    }
+
+    .sidebar-collapsed .sidebar-section-title {
+      display: none;
+    }
+
+    .sidebar-collapsed .sidebar {
+      width: 48px;
+    }
+
+    .sidebar-collapsed .main-content {
+      margin-left: 48px;
+    }
+
+    .donut-segment {
+      transition: opacity 0.15s;
+    }
+
+    .donut-segment:hover {
+      opacity: 0.8;
+    }
+  </style>
+</head>
+
+<body class="bg-surface-0 text-text-primary text-[13px] leading-tight antialiased">
+
+  <div id="app" class="flex h-screen overflow-hidden">
+
+    <!-- ===== SIDEBAR ===== -->
+    <aside id="sidebar"
+      class="sidebar w-[240px] h-full bg-surface-1 border-r border-border-muted flex flex-col flex-shrink-0 transition-all duration-200 overflow-y-auto overflow-x-hidden">
+
+      <!-- Logo -->
+      <div class="h-[40px] flex items-center px-4 border-b border-border-muted flex-shrink-0">
+        <span class="mono text-[15px] font-bold tracking-wider text-text-primary">CHRD</span>
+        <span class="mono text-[15px] font-bold tracking-wider text-text-muted sidebar-label ml-0.5">FIN</span>
+      </div>
+
+      <!-- Nav Sections -->
+      <nav class="flex-1 py-2 space-y-1">
+
+        <!-- Tracking -->
+        <div class="px-3 pt-3 pb-1">
+          <span
+            class="sidebar-section-title text-[10px] uppercase tracking-[0.1em] text-text-muted font-medium">Tracking</span>
+        </div>
+        <a href="#"
+          class="nav-item active flex items-center gap-3 px-4 py-[7px] text-[13px] text-text-secondary hover:text-text-primary cursor-pointer"
+          data-view="dashboard">
+          <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <rect x="3" y="3" width="7" height="7" rx="1" />
+            <rect x="14" y="3" width="7" height="7" rx="1" />
+            <rect x="3" y="14" width="7" height="7" rx="1" />
+            <rect x="14" y="14" width="7" height="7" rx="1" />
+          </svg>
+          <span class="sidebar-label">Dashboard</span>
+        </a>
+        <a href="#"
+          class="nav-item flex items-center gap-3 px-4 py-[7px] text-[13px] text-text-secondary hover:text-text-primary cursor-pointer"
+          data-view="portfolio">
+          <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4" />
+            <path d="M3 5v14a2 2 0 0 0 2 2h16v-5" />
+            <path d="M18 12a2 2 0 0 0 0 4h4v-4z" />
+          </svg>
+          <span class="sidebar-label">Portfolio</span>
+        </a>
+        <a href="#"
+          class="nav-item flex items-center gap-3 px-4 py-[7px] text-[13px] text-text-secondary hover:text-text-primary cursor-pointer"
+          data-view="transactions">
+          <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+          </svg>
+          <span class="sidebar-label">Transactions</span>
+        </a>
+        <a href="#"
+          class="nav-item flex items-center gap-3 px-4 py-[7px] text-[13px] text-text-secondary hover:text-text-primary cursor-pointer"
+          data-view="watchlist">
+          <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z" />
+            <circle cx="12" cy="12" r="3" />
+          </svg>
+          <span class="sidebar-label">Watchlists</span>
+        </a>
+
+        <!-- Analysis -->
+        <div class="px-3 pt-4 pb-1">
+          <span
+            class="sidebar-section-title text-[10px] uppercase tracking-[0.1em] text-text-muted font-medium">Analysis</span>
+        </div>
+        <a href="#"
+          class="nav-item flex items-center gap-3 px-4 py-[7px] text-[13px] text-text-secondary hover:text-text-primary cursor-pointer"
+          data-view="backtest">
+          <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+          </svg>
+          <span class="sidebar-label">Backtesting</span>
+        </a>
+        <a href="#"
+          class="nav-item flex items-center gap-3 px-4 py-[7px] text-[13px] text-text-secondary hover:text-text-primary cursor-pointer"
+          data-view="montecarlo">
+          <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2z" />
+            <path d="M12 6v6l4 2" />
+          </svg>
+          <span class="sidebar-label">Monte Carlo</span>
+        </a>
+        <a href="#"
+          class="nav-item flex items-center gap-3 px-4 py-[7px] text-[13px] text-text-muted cursor-default opacity-50"
+          title="Phase 9">
+          <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10" />
+            <path d="M8 12l4 4 4-4M12 8v8" />
+          </svg>
+          <span class="sidebar-label">Optimizer</span>
+        </a>
+
+        <!-- Tools -->
+        <div class="px-3 pt-4 pb-1">
+          <span
+            class="sidebar-section-title text-[10px] uppercase tracking-[0.1em] text-text-muted font-medium">Tools</span>
+        </div>
+        <a href="#"
+          class="nav-item flex items-center gap-3 px-4 py-[7px] text-[13px] text-text-secondary hover:text-text-primary cursor-pointer"
+          data-view="calculators">
+          <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <rect x="4" y="2" width="16" height="20" rx="2" />
+            <line x1="8" y1="6" x2="16" y2="6" />
+            <line x1="8" y1="10" x2="10" y2="10" />
+            <line x1="14" y1="10" x2="16" y2="10" />
+            <line x1="8" y1="14" x2="10" y2="14" />
+            <line x1="14" y1="14" x2="16" y2="14" />
+            <line x1="8" y1="18" x2="16" y2="18" />
+          </svg>
+          <span class="sidebar-label">Calculators</span>
+        </a>
+        <a href="#"
+          class="nav-item flex items-center gap-3 px-4 py-[7px] text-[13px] text-text-secondary hover:text-text-primary cursor-pointer"
+          data-view="compare">
+          <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <line x1="18" y1="20" x2="18" y2="10" />
+            <line x1="12" y1="20" x2="12" y2="4" />
+            <line x1="6" y1="20" x2="6" y2="14" />
+          </svg>
+          <span class="sidebar-label">Compare</span>
+        </a>
+
+        <!-- Market -->
+        <div class="px-3 pt-4 pb-1">
+          <span
+            class="sidebar-section-title text-[10px] uppercase tracking-[0.1em] text-text-muted font-medium">Market</span>
+        </div>
+        <a href="#"
+          class="nav-item flex items-center gap-3 px-4 py-[7px] text-[13px] text-text-secondary hover:text-text-primary cursor-pointer"
+          data-view="screener">
+          <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <circle cx="11" cy="11" r="8" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg>
+          <span class="sidebar-label">Screener</span>
+        </a>
+        <a href="#"
+          class="nav-item flex items-center gap-3 px-4 py-[7px] text-[13px] text-text-secondary hover:text-text-primary cursor-pointer"
+          data-view="news">
+          <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2" />
+          </svg>
+          <span class="sidebar-label">News</span>
+        </a>
+        <a href="#"
+          class="nav-item flex items-center gap-3 px-4 py-[7px] text-[13px] text-text-secondary hover:text-text-primary cursor-pointer"
+          data-view="calendar">
+          <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+            <line x1="16" y1="2" x2="16" y2="6" />
+            <line x1="8" y1="2" x2="8" y2="6" />
+            <line x1="3" y1="10" x2="21" y2="10" />
+          </svg>
+          <span class="sidebar-label">Calendar</span>
+        </a>
+      </nav>
+
+      <!-- Collapse Toggle -->
+      <button id="sidebar-toggle"
+        class="h-[40px] flex items-center justify-center border-t border-border-muted text-text-muted hover:text-text-secondary cursor-pointer flex-shrink-0">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <polyline points="11 17 6 12 11 7" />
+          <polyline points="18 17 13 12 18 7" />
+        </svg>
+      </button>
+    </aside>
+
+    <!-- ===== MAIN ===== -->
+    <div class="flex-1 flex flex-col min-w-0">
+
+      <!-- ===== HEADER ===== -->
+      <header class="h-[40px] bg-surface-1 border-b border-border-muted flex items-center px-4 gap-4 flex-shrink-0">
+        <!-- Breadcrumb -->
+        <div class="flex items-center gap-1.5 text-[12px]">
+          <span class="text-text-muted" id="breadcrumb-section">Tracking</span>
+          <span class="text-text-muted">/</span>
+          <span class="text-text-secondary" id="breadcrumb-page">Dashboard</span>
+        </div>
+
+        <div class="flex-1"></div>
+
+        <!-- Ticker Search -->
+        <div class="relative">
+          <div class="flex items-center bg-surface-2 border border-border-subtle rounded px-3 py-[5px] w-[320px]">
+            <svg class="w-3.5 h-3.5 text-text-muted mr-2 flex-shrink-0" fill="none" stroke="currentColor"
+              viewBox="0 0 24 24">
+              <circle cx="11" cy="11" r="8" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+            <input type="text" placeholder="Search tickers, portfolios, tools...  &#8984;K"
+              class="bg-transparent text-[12px] text-text-secondary placeholder-text-muted outline-none w-full" />
+          </div>
+        </div>
+
+        <div class="flex-1"></div>
+
+        <!-- Market Status -->
+        <div class="flex items-center gap-2 text-[11px]">
+          <span class="w-2 h-2 rounded-full bg-gain animate-pulse"></span>
+          <span class="text-text-secondary">Market Open</span>
+          <span class="text-text-muted ml-1">3:24 PM ET</span>
+        </div>
+      </header>
+
+      <!-- ===== CONTENT AREA ===== -->
+      <main class="flex-1 overflow-y-auto bg-surface-0 p-4">
+
+        <!-- ================================================ -->
+        <!-- VIEW 1: DASHBOARD                                 -->
+        <!-- ================================================ -->
+        <div id="view-dashboard" class="view">
+
+          <!-- Top Strip -->
+          <div class="flex items-baseline gap-6 mb-4 px-1">
+            <h2 class="text-[14px] font-medium text-text-primary">Core Holdings</h2>
+            <div class="flex items-baseline gap-1.5">
+              <span class="text-[18px] font-semibold text-text-primary">$847,293.14</span>
+            </div>
+            <div class="h-4 w-px bg-border-subtle"></div>
+            <div class="flex items-baseline gap-1.5">
+              <span class="text-[13px] text-gain">+$2,841.07</span>
+              <span class="text-[11px] text-text-muted">(+0.34%)</span>
+            </div>
+            <div class="h-4 w-px bg-border-subtle"></div>
+            <div class="flex items-baseline gap-1.5">
+              <span class="text-[11px] text-text-muted">Total Return</span>
+              <span class="text-[13px] text-gain">+34.7%</span>
+              <span class="text-[11px] text-text-muted">(+$218,441.07)</span>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-4 gap-3 mb-4">
+            <div class="border border-border-muted rounded bg-surface-1 p-3">
+              <div class="text-[10px] uppercase tracking-wider text-text-muted font-medium mb-1">Overview</div>
+              <div class="text-[13px] text-text-primary font-medium">Multi-account summary</div>
+              <div class="text-[11px] text-text-muted mt-1">Placeholder: net worth, account health, and daily
+                highlights.</div>
+            </div>
+            <div class="border border-border-muted rounded bg-surface-1 p-3">
+              <div class="text-[10px] uppercase tracking-wider text-text-muted font-medium mb-1">Risk</div>
+              <div class="text-[13px] text-text-primary font-medium">Exposure monitor</div>
+              <div class="text-[11px] text-text-muted mt-1">Placeholder: factor, sector, leverage, and concentration
+                alerts.</div>
+            </div>
+            <div class="border border-border-muted rounded bg-surface-1 p-3">
+              <div class="text-[10px] uppercase tracking-wider text-text-muted font-medium mb-1">Workflow</div>
+              <div class="text-[13px] text-text-primary font-medium">Tasks and reminders</div>
+              <div class="text-[11px] text-text-muted mt-1">Placeholder: rebalance prompts, earnings watch, and cash
+                deployment queue.</div>
+            </div>
+            <div class="border border-border-muted rounded bg-surface-1 p-3">
+              <div class="text-[10px] uppercase tracking-wider text-text-muted font-medium mb-1">Accounts</div>
+              <div class="text-[13px] text-text-primary font-medium">4 linked institutions</div>
+              <div class="text-[11px] text-text-muted mt-1">Placeholder: brokerage, retirement, bank, and alternative
+                assets summary.</div>
+            </div>
+          </div>
+
+          <div class="flex gap-4">
+            <!-- Holdings Table (60%) -->
+            <div class="w-[60%] border border-border-muted rounded bg-surface-1 overflow-hidden">
+              <div class="overflow-x-auto">
+                <table class="w-full text-[12px]">
+                  <thead>
+                    <tr class="text-text-muted text-[10px] uppercase tracking-wider border-b border-border-muted">
+                      <th class="text-left px-3 py-2 font-medium">Ticker</th>
+                      <th class="text-left px-3 py-2 font-medium">Name</th>
+                      <th class="text-right px-3 py-2 font-medium">Shares</th>
+                      <th class="text-right px-3 py-2 font-medium">Avg Cost</th>
+                      <th class="text-right px-3 py-2 font-medium">Price</th>
+                      <th class="text-right px-3 py-2 font-medium">Mkt Value</th>
+                      <th class="text-right px-3 py-2 font-medium">Day Chg</th>
+                      <th class="text-right px-3 py-2 font-medium">Total Ret</th>
+                      <th class="text-right px-3 py-2 font-medium">Weight</th>
+                    </tr>
+                  </thead>
+                  <tbody id="holdings-body" class="divide-y divide-border-muted">
+                    <!-- JS populated -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Right Panels (40%) -->
+            <div class="w-[40%] flex flex-col gap-4">
+
+              <!-- Allocation Donut -->
+              <div class="border border-border-muted rounded bg-surface-1 p-4">
+                <div class="text-[10px] uppercase tracking-wider text-text-muted font-medium mb-3">Sector Allocation
+                </div>
+                <div class="flex items-center justify-center">
+                  <svg viewBox="0 0 200 200" class="w-[160px] h-[160px]">
+                    <!-- Donut segments (approximate arc paths) -->
+                    <circle cx="100" cy="100" r="70" fill="none" stroke="#3b82f6" stroke-width="24"
+                      stroke-dasharray="149.6 289.0" stroke-dashoffset="0" class="donut-segment" />
+                    <circle cx="100" cy="100" r="70" fill="none" stroke="#6366f1" stroke-width="24"
+                      stroke-dasharray="79.2 359.4" stroke-dashoffset="-149.6" class="donut-segment" />
+                    <circle cx="100" cy="100" r="70" fill="none" stroke="#8b5cf6" stroke-width="24"
+                      stroke-dasharray="61.6 377.0" stroke-dashoffset="-228.8" class="donut-segment" />
+                    <circle cx="100" cy="100" r="70" fill="none" stroke="#a78bfa" stroke-width="24"
+                      stroke-dasharray="52.8 385.8" stroke-dashoffset="-290.4" class="donut-segment" />
+                    <circle cx="100" cy="100" r="70" fill="none" stroke="#c4b5fd" stroke-width="24"
+                      stroke-dasharray="35.2 403.4" stroke-dashoffset="-343.2" class="donut-segment" />
+                    <circle cx="100" cy="100" r="70" fill="none" stroke="#525252" stroke-width="24"
+                      stroke-dasharray="61.6 377.0" stroke-dashoffset="-378.4" class="donut-segment" />
+                    <!-- Center label -->
+                    <text x="100" y="96" text-anchor="middle" fill="#a1a1aa" font-size="10">6 Sectors</text>
+                    <text x="100" y="112" text-anchor="middle" fill="#fafafa" font-size="13"
+                      font-weight="600">100%</text>
+                  </svg>
+                  <div class="ml-4 space-y-1.5 text-[11px]">
+                    <div class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-sm"
+                        style="background:#3b82f6"></span><span class="text-text-secondary">Tech</span><span
+                        class="text-text-muted ml-auto">34%</span></div>
+                    <div class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-sm"
+                        style="background:#6366f1"></span><span class="text-text-secondary">Health</span><span
+                        class="text-text-muted ml-auto">18%</span></div>
+                    <div class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-sm"
+                        style="background:#8b5cf6"></span><span class="text-text-secondary">Financials</span><span
+                        class="text-text-muted ml-auto">14%</span></div>
+                    <div class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-sm"
+                        style="background:#a78bfa"></span><span class="text-text-secondary">Consumer</span><span
+                        class="text-text-muted ml-auto">12%</span></div>
+                    <div class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-sm"
+                        style="background:#c4b5fd"></span><span class="text-text-secondary">Energy</span><span
+                        class="text-text-muted ml-auto">8%</span></div>
+                    <div class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-sm"
+                        style="background:#525252"></span><span class="text-text-secondary">Other</span><span
+                        class="text-text-muted ml-auto">14%</span></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Performance Sparkline -->
+              <div class="border border-border-muted rounded bg-surface-1 p-4">
+                <div class="text-[10px] uppercase tracking-wider text-text-muted font-medium mb-2">12-Month Performance
+                </div>
+                <div class="relative h-[80px]">
+                  <svg viewBox="0 0 400 80" class="w-full h-full" preserveAspectRatio="none">
+                    <defs>
+                      <linearGradient id="sparkfill" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.15" />
+                        <stop offset="100%" stop-color="#3b82f6" stop-opacity="0" />
+                      </linearGradient>
+                    </defs>
+                    <path
+                      d="M0,65 L30,60 L60,55 L90,58 L120,45 L150,40 L180,42 L210,35 L240,30 L270,25 L300,28 L330,18 L360,15 L400,10"
+                      fill="none" stroke="#3b82f6" stroke-width="1.5" />
+                    <path
+                      d="M0,65 L30,60 L60,55 L90,58 L120,45 L150,40 L180,42 L210,35 L240,30 L270,25 L300,28 L330,18 L360,15 L400,10 L400,80 L0,80 Z"
+                      fill="url(#sparkfill)" />
+                  </svg>
+                  <div class="absolute left-0 bottom-0 text-[10px] text-text-muted">$628K</div>
+                  <div class="absolute right-0 top-0 text-[10px] text-gain">$847K</div>
+                </div>
+              </div>
+
+              <!-- Quick Stats -->
+              <div class="border border-border-muted rounded bg-surface-1 p-4">
+                <div class="text-[10px] uppercase tracking-wider text-text-muted font-medium mb-3">Portfolio Stats</div>
+                <div class="grid grid-cols-3 gap-3">
+                  <div>
+                    <div class="text-[10px] text-text-muted">Beta</div>
+                    <div class="text-[13px] text-text-primary font-medium">1.12</div>
+                  </div>
+                  <div>
+                    <div class="text-[10px] text-text-muted">Sharpe</div>
+                    <div class="text-[13px] text-text-primary font-medium">1.84</div>
+                  </div>
+                  <div>
+                    <div class="text-[10px] text-text-muted">Div Yield</div>
+                    <div class="text-[13px] text-text-primary font-medium">1.6%</div>
+                  </div>
+                  <div>
+                    <div class="text-[10px] text-text-muted">Day Volume</div>
+                    <div class="text-[13px] text-text-primary font-medium">$12.4M</div>
+                  </div>
+                  <div>
+                    <div class="text-[10px] text-text-muted">52w Range</div>
+                    <div class="text-[13px] text-text-primary font-medium">72%</div>
+                  </div>
+                  <div>
+                    <div class="text-[10px] text-text-muted">Cash</div>
+                    <div class="text-[13px] text-text-primary font-medium">$24,100</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ================================================ -->
+        <!-- VIEW 2: PORTFOLIO HOLDINGS                        -->
+        <!-- ================================================ -->
+        <div id="view-portfolio" class="view hidden">
+
+          <div class="flex items-baseline gap-3 mb-4 px-1">
+            <h2 class="text-[14px] font-medium text-text-primary">Portfolio Holdings</h2>
+            <span class="text-[11px] text-text-muted">Primary taxable account placeholder view</span>
+          </div>
+
+          <div class="grid grid-cols-[minmax(0,1.4fr)_minmax(320px,0.8fr)] gap-4 mb-4">
+            <div class="border border-border-muted rounded bg-surface-1 overflow-hidden">
+              <div class="flex items-center justify-between px-3 py-2 border-b border-border-muted">
+                <div>
+                  <div class="text-[10px] uppercase tracking-wider text-text-muted font-medium">Positions</div>
+                  <div class="text-[11px] text-text-muted mt-0.5">Dedicated position-level view distinct from Dashboard
+                  </div>
+                </div>
+                <button
+                  class="bg-surface-2 border border-border-subtle text-text-secondary text-[11px] rounded px-2.5 py-[5px] cursor-pointer hover:border-accent/30">Manage
+                  Columns</button>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="w-full text-[12px]">
+                  <thead>
+                    <tr class="text-text-muted text-[10px] uppercase tracking-wider border-b border-border-muted">
+                      <th class="text-left px-3 py-2 font-medium">Ticker</th>
+                      <th class="text-left px-3 py-2 font-medium">Name</th>
+                      <th class="text-right px-3 py-2 font-medium">Shares</th>
+                      <th class="text-right px-3 py-2 font-medium">Avg Cost</th>
+                      <th class="text-right px-3 py-2 font-medium">Price</th>
+                      <th class="text-right px-3 py-2 font-medium">Mkt Value</th>
+                      <th class="text-right px-3 py-2 font-medium">Day Chg</th>
+                      <th class="text-right px-3 py-2 font-medium">Total Ret</th>
+                      <th class="text-right px-3 py-2 font-medium">Weight</th>
+                    </tr>
+                  </thead>
+                  <tbody id="portfolio-holdings-body" class="divide-y divide-border-muted"></tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="flex flex-col gap-4">
+              <div class="border border-border-muted rounded bg-surface-1 p-4">
+                <div class="text-[10px] uppercase tracking-wider text-text-muted font-medium mb-3">Portfolio Actions
+                </div>
+                <div class="space-y-2 text-[12px]">
+                  <button
+                    class="w-full bg-accent hover:bg-accent/90 text-white font-medium rounded px-3 py-2 cursor-pointer">Add
+                    Position</button>
+                  <button
+                    class="w-full bg-surface-2 border border-border-subtle text-text-secondary rounded px-3 py-2 cursor-pointer hover:border-accent/30">Import
+                    Broker File</button>
+                  <button
+                    class="w-full bg-surface-2 border border-border-subtle text-text-secondary rounded px-3 py-2 cursor-pointer hover:border-accent/30">Reconcile
+                    Lots</button>
+                </div>
+              </div>
+
+              <div class="border border-border-muted rounded bg-surface-1 p-4">
+                <div class="text-[10px] uppercase tracking-wider text-text-muted font-medium mb-3">Allocation Snapshots
+                </div>
+                <div class="space-y-3 text-[11px]">
+                  <div>
+                    <div class="flex justify-between text-text-secondary mb-1"><span>Equities</span><span>91.4%</span>
+                    </div>
+                    <div class="h-2 rounded bg-surface-2 overflow-hidden">
+                      <div class="h-full bg-accent" style="width:91.4%"></div>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="flex justify-between text-text-secondary mb-1"><span>Cash</span><span>2.8%</span></div>
+                    <div class="h-2 rounded bg-surface-2 overflow-hidden">
+                      <div class="h-full bg-amber" style="width:2.8%"></div>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="flex justify-between text-text-secondary mb-1"><span>Income</span><span>5.8%</span>
+                    </div>
+                    <div class="h-2 rounded bg-surface-2 overflow-hidden">
+                      <div class="h-full bg-gain" style="width:5.8%"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="border border-border-muted rounded bg-surface-1 p-4">
+                <div class="text-[10px] uppercase tracking-wider text-text-muted font-medium mb-3">Notes</div>
+                <div class="space-y-2 text-[12px] text-text-secondary">
+                  <p>This placeholder view is intentionally different from Dashboard.</p>
+                  <p>Dashboard should become a cross-account command center; Portfolio should remain a position, lots,
+                    and workflow surface.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ================================================ -->
+        <!-- VIEW 2: BACKTEST RESULTS                          -->
+        <!-- ================================================ -->
+        <div id="view-backtest" class="view hidden">
+
+          <!-- Config Subtitle -->
+          <div class="flex items-baseline gap-3 mb-1 px-1">
+            <h2 class="text-[14px] font-medium text-text-primary">Backtest Results</h2>
+            <span class="text-[11px] text-text-muted">60% SPY / 40% AGG &mdash; Jan 2005 &ndash; Dec 2024 &mdash; Annual
+              Rebalancing</span>
+          </div>
+
+          <!-- Metrics Bar -->
+          <div class="flex items-stretch border border-border-muted rounded bg-surface-1 mb-4 overflow-x-auto">
+            <div class="metric-cell flex-1 px-4 py-3 border-r border-border-muted">
+              <div class="text-[10px] text-text-muted uppercase tracking-wider">CAGR</div>
+              <div class="text-[15px] font-semibold text-text-primary mt-0.5">7.82%</div>
+            </div>
+            <div class="metric-cell flex-1 px-4 py-3 border-r border-border-muted">
+              <div class="text-[10px] text-text-muted uppercase tracking-wider">Total Return</div>
+              <div class="text-[15px] font-semibold text-text-primary mt-0.5">312.4%</div>
+            </div>
+            <div class="metric-cell flex-1 px-4 py-3 border-r border-border-muted">
+              <div class="text-[10px] text-text-muted uppercase tracking-wider">Max Drawdown</div>
+              <div class="text-[15px] font-semibold text-loss mt-0.5">-32.1%</div>
+            </div>
+            <div class="metric-cell flex-1 px-4 py-3 border-r border-border-muted">
+              <div class="text-[10px] text-text-muted uppercase tracking-wider">Sharpe</div>
+              <div class="text-[15px] font-semibold text-text-primary mt-0.5">0.71</div>
+            </div>
+            <div class="metric-cell flex-1 px-4 py-3 border-r border-border-muted">
+              <div class="text-[10px] text-text-muted uppercase tracking-wider">Sortino</div>
+              <div class="text-[15px] font-semibold text-text-primary mt-0.5">0.94</div>
+            </div>
+            <div class="metric-cell flex-1 px-4 py-3 border-r border-border-muted">
+              <div class="text-[10px] text-text-muted uppercase tracking-wider">Volatility</div>
+              <div class="text-[15px] font-semibold text-text-primary mt-0.5">9.8%</div>
+            </div>
+            <div class="metric-cell flex-1 px-4 py-3 border-r border-border-muted">
+              <div class="text-[10px] text-text-muted uppercase tracking-wider">Best Year</div>
+              <div class="text-[15px] font-semibold text-gain mt-0.5">+26.3%</div>
+            </div>
+            <div class="metric-cell flex-1 px-4 py-3">
+              <div class="text-[10px] text-text-muted uppercase tracking-wider">Worst Year</div>
+              <div class="text-[15px] font-semibold text-loss mt-0.5">-22.1%</div>
+            </div>
+          </div>
+
+          <!-- Equity Curve + Drawdown Chart -->
+          <div class="border border-border-muted rounded bg-surface-1 mb-4 overflow-hidden">
+            <!-- Equity Curve -->
+            <div class="p-4 pb-0">
+              <div class="flex items-center gap-4 mb-2">
+                <span class="text-[10px] uppercase tracking-wider text-text-muted font-medium">Growth of $10,000</span>
+                <div class="flex items-center gap-3 ml-auto text-[11px]">
+                  <span class="flex items-center gap-1.5"><span class="w-3 h-[2px] bg-accent inline-block"></span><span
+                      class="text-text-muted">Portfolio</span></span>
+                  <span class="flex items-center gap-1.5"><span class="w-3 h-[2px] bg-text-muted inline-block"
+                      style="border-top:1px dashed"></span><span class="text-text-muted">S&P 500</span></span>
+                </div>
+              </div>
+              <div class="relative h-[220px]">
+                <svg viewBox="0 0 800 220" class="w-full h-full" preserveAspectRatio="none">
+                  <!-- Grid lines -->
+                  <line x1="0" y1="44" x2="800" y2="44" stroke="#27272a" stroke-width="0.5" />
+                  <line x1="0" y1="88" x2="800" y2="88" stroke="#27272a" stroke-width="0.5" />
+                  <line x1="0" y1="132" x2="800" y2="132" stroke="#27272a" stroke-width="0.5" />
+                  <line x1="0" y1="176" x2="800" y2="176" stroke="#27272a" stroke-width="0.5" />
+                  <!-- Benchmark (S&P 500) -->
+                  <path
+                    d="M0,200 L40,195 L80,185 L120,190 L160,200 L200,210 L240,175 L280,160 L320,130 L360,120 L400,105 L440,95 L480,100 L520,80 L560,65 L600,55 L640,50 L680,35 L720,30 L760,20 L800,15"
+                    fill="none" stroke="#71717a" stroke-width="1" stroke-dasharray="4,3" />
+                  <!-- Portfolio -->
+                  <path
+                    d="M0,200 L40,196 L80,188 L120,192 L160,198 L200,205 L240,178 L280,168 L320,145 L360,138 L400,125 L440,118 L480,122 L520,108 L560,98 L600,88 L640,82 L680,70 L720,62 L760,52 L800,45"
+                    fill="none" stroke="#3b82f6" stroke-width="1.5" />
+                  <!-- Y-axis labels -->
+                  <text x="795" y="210" text-anchor="end" fill="#71717a" font-size="10">$10K</text>
+                  <text x="795" y="133" text-anchor="end" fill="#71717a" font-size="10">$25K</text>
+                  <text x="795" y="50" text-anchor="end" fill="#71717a" font-size="10">$41K</text>
+                </svg>
+                <!-- X-axis year labels -->
+                <div class="absolute bottom-0 left-0 right-0 flex justify-between px-1 text-[10px] text-text-muted">
+                  <span>2005</span><span>2008</span><span>2011</span><span>2014</span><span>2017</span><span>2020</span><span>2024</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Drawdown Chart (connected) -->
+            <div class="px-4 pb-4 border-t border-border-muted">
+              <div class="text-[10px] uppercase tracking-wider text-text-muted font-medium mt-2 mb-1">Drawdown</div>
+              <div class="relative h-[80px]">
+                <svg viewBox="0 0 800 80" class="w-full h-full" preserveAspectRatio="none">
+                  <rect x="0" y="0" width="800" height="80" fill="none" />
+                  <line x1="0" y1="0" x2="800" y2="0" stroke="#27272a" stroke-width="0.5" />
+                  <!-- Drawdown bars (simplified) -->
+                  <path
+                    d="M0,0 L40,0 L80,2 L120,8 L160,25 L200,40 L220,55 L240,35 L280,15 L320,5 L360,3 L400,2 L440,5 L480,12 L500,18 L520,8 L560,3 L600,5 L620,10 L640,6 L680,2 L720,1 L760,3 L800,1"
+                    fill="rgba(239,68,68,0.15)" stroke="#ef4444" stroke-width="1" />
+                  <text x="5" y="12" fill="#71717a" font-size="9">0%</text>
+                  <text x="5" y="75" fill="#71717a" font-size="9">-32%</text>
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom: Annual Returns + Rolling Returns -->
+          <div class="flex gap-4">
+            <!-- Annual Returns Table -->
+            <div class="w-[55%] border border-border-muted rounded bg-surface-1 overflow-hidden">
+              <div class="text-[10px] uppercase tracking-wider text-text-muted font-medium px-3 pt-3 pb-2">Annual
+                Returns</div>
+              <table class="w-full text-[12px]">
+                <thead>
+                  <tr class="text-text-muted text-[10px] uppercase tracking-wider border-b border-border-muted">
+                    <th class="text-left px-3 py-1.5 font-medium">Year</th>
+                    <th class="text-right px-3 py-1.5 font-medium">Portfolio</th>
+                    <th class="text-right px-3 py-1.5 font-medium">Benchmark</th>
+                    <th class="text-right px-3 py-1.5 font-medium">Excess</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-border-muted" id="annual-returns-body">
+                  <!-- JS populated -->
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Rolling Returns Distribution -->
+            <div class="w-[45%] border border-border-muted rounded bg-surface-1 p-4">
+              <div class="text-[10px] uppercase tracking-wider text-text-muted font-medium mb-3">12-Month Rolling Return
+                Distribution</div>
+              <div class="relative h-[200px] flex items-end gap-[2px] px-2">
+                <!-- Histogram bars -->
+                <div class="flex-1 bg-accent/20 rounded-t" style="height:8%"></div>
+                <div class="flex-1 bg-accent/20 rounded-t" style="height:12%"></div>
+                <div class="flex-1 bg-accent/30 rounded-t" style="height:18%"></div>
+                <div class="flex-1 bg-accent/30 rounded-t" style="height:28%"></div>
+                <div class="flex-1 bg-accent/40 rounded-t" style="height:35%"></div>
+                <div class="flex-1 bg-accent/40 rounded-t" style="height:48%"></div>
+                <div class="flex-1 bg-accent/50 rounded-t" style="height:62%"></div>
+                <div class="flex-1 bg-accent/50 rounded-t" style="height:78%"></div>
+                <div class="flex-1 bg-accent/60 rounded-t" style="height:92%"></div>
+                <div class="flex-1 bg-accent/70 rounded-t" style="height:100%"></div>
+                <div class="flex-1 bg-accent/70 rounded-t" style="height:95%"></div>
+                <div class="flex-1 bg-accent/60 rounded-t" style="height:82%"></div>
+                <div class="flex-1 bg-accent/50 rounded-t" style="height:65%"></div>
+                <div class="flex-1 bg-accent/40 rounded-t" style="height:45%"></div>
+                <div class="flex-1 bg-accent/30 rounded-t" style="height:30%"></div>
+                <div class="flex-1 bg-accent/20 rounded-t" style="height:20%"></div>
+                <div class="flex-1 bg-accent/20 rounded-t" style="height:10%"></div>
+                <div class="flex-1 bg-accent/10 rounded-t" style="height:5%"></div>
+                <!-- Mean line -->
+                <div class="absolute left-[52%] top-0 bottom-0 w-px bg-text-muted"
+                  style="border-left:1px dashed #71717a"></div>
+              </div>
+              <div class="flex justify-between mt-2 text-[10px] text-text-muted px-2">
+                <span>-25%</span>
+                <span>Mean: 8.1%</span>
+                <span>+35%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ================================================ -->
+        <!-- VIEW 4: MARKET SCREENER                           -->
+        <!-- ================================================ -->
+        <div id="view-screener" class="view hidden">
+
+          <div class="flex items-baseline gap-3 mb-3 px-1">
+            <h2 class="text-[14px] font-medium text-text-primary">Stock Screener</h2>
+          </div>
+
+          <!-- Filter Bar -->
+          <div class="flex items-center gap-2 mb-4 flex-wrap">
+            <div
+              class="flex items-center bg-surface-2 border border-border-subtle rounded px-3 py-[5px] text-[12px] text-text-secondary gap-1.5 cursor-pointer hover:border-accent/50">
+              <span class="text-text-muted">Type:</span>
+              <span>Stocks</span>
+              <svg class="w-3 h-3 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
+            </div>
+            <div
+              class="flex items-center bg-surface-2 border border-border-subtle rounded px-3 py-[5px] text-[12px] text-text-secondary gap-1.5 cursor-pointer hover:border-accent/50">
+              <span class="text-text-muted">Sector:</span>
+              <span>All</span>
+              <svg class="w-3 h-3 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
+            </div>
+            <div
+              class="flex items-center bg-surface-2 border border-border-subtle rounded px-3 py-[5px] text-[12px] text-text-secondary gap-1.5 cursor-pointer hover:border-accent/50">
+              <span class="text-text-muted">Mkt Cap:</span>
+              <span>$10B &ndash; $1T</span>
+              <svg class="w-3 h-3 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
+            </div>
+            <div
+              class="flex items-center bg-surface-2 border border-accent/40 rounded px-3 py-[5px] text-[12px] text-accent gap-1.5 cursor-pointer">
+              <span class="text-text-muted">Div Yield:</span>
+              <span class="text-accent">&gt; 2%</span>
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
+            </div>
+            <div
+              class="flex items-center bg-surface-2 border border-accent/40 rounded px-3 py-[5px] text-[12px] text-accent gap-1.5 cursor-pointer">
+              <span class="text-text-muted">P/E:</span>
+              <span class="text-accent">5 &ndash; 25</span>
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
+            </div>
+            <button class="text-[11px] text-text-muted hover:text-text-secondary ml-1">Clear Filters</button>
+            <div class="ml-auto text-[11px] text-text-muted">142 results</div>
+          </div>
+
+          <!-- Results Table -->
+          <div class="border border-border-muted rounded bg-surface-1 overflow-hidden">
+            <div class="overflow-x-auto">
+              <table class="w-full text-[12px]">
+                <thead>
+                  <tr class="text-text-muted text-[10px] uppercase tracking-wider border-b border-border-muted">
+                    <th class="text-left px-3 py-2 font-medium">Ticker</th>
+                    <th class="text-left px-3 py-2 font-medium">Company</th>
+                    <th class="text-left px-3 py-2 font-medium">Sector</th>
+                    <th class="text-right px-3 py-2 font-medium">Mkt Cap</th>
+                    <th class="text-right px-3 py-2 font-medium">Price</th>
+                    <th class="text-right px-3 py-2 font-medium">Day %</th>
+                    <th class="text-right px-3 py-2 font-medium">YTD %</th>
+                    <th class="text-right px-3 py-2 font-medium">Div Yld</th>
+                    <th class="text-right px-3 py-2 font-medium cursor-pointer">P/E <span
+                        class="text-accent">&#9660;</span></th>
+                    <th class="text-right px-3 py-2 font-medium">Avg Vol</th>
+                    <th class="text-center px-3 py-2 font-medium">30d</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-border-muted" id="screener-body">
+                  <!-- JS populated -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ================================================ -->
+        <!-- VIEW: MONTE CARLO (stub)                          -->
+        <!-- ================================================ -->
+        <div id="view-montecarlo" class="view hidden">
+          <div class="flex items-baseline gap-3 mb-4 px-1">
+            <h2 class="text-[14px] font-medium text-text-primary">Monte Carlo Simulation</h2>
+            <span class="text-[11px] text-text-muted">Phase 4</span>
+          </div>
+          <div class="border border-border-muted rounded bg-surface-1 p-6">
+            <div class="grid grid-cols-2 gap-6">
+              <!-- Config Form -->
+              <div class="space-y-4">
+                <div class="text-[11px] uppercase tracking-wider text-text-muted font-medium mb-3">Simulation
+                  Configuration</div>
+                <div>
+                  <label class="text-[11px] text-text-muted block mb-1">Method</label>
+                  <select
+                    class="w-full bg-surface-2 border border-border-subtle rounded px-3 py-[6px] text-[12px] text-text-secondary outline-none">
+                    <option>Parametric (GBM)</option>
+                    <option>Historical Bootstrap</option>
+                    <option>Block Bootstrap</option>
+                  </select>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                  <div>
+                    <label class="text-[11px] text-text-muted block mb-1">Iterations</label>
+                    <input type="number" value="10000"
+                      class="w-full bg-surface-2 border border-border-subtle rounded px-3 py-[6px] text-[12px] text-text-secondary outline-none" />
+                  </div>
+                  <div>
+                    <label class="text-[11px] text-text-muted block mb-1">Projection (yrs)</label>
+                    <input type="number" value="30"
+                      class="w-full bg-surface-2 border border-border-subtle rounded px-3 py-[6px] text-[12px] text-text-secondary outline-none" />
+                  </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                  <div>
+                    <label class="text-[11px] text-text-muted block mb-1">Initial Amount</label>
+                    <input type="text" value="$100,000"
+                      class="w-full bg-surface-2 border border-border-subtle rounded px-3 py-[6px] text-[12px] text-text-secondary outline-none" />
+                  </div>
+                  <div>
+                    <label class="text-[11px] text-text-muted block mb-1">Annual Contribution</label>
+                    <input type="text" value="$12,000"
+                      class="w-full bg-surface-2 border border-border-subtle rounded px-3 py-[6px] text-[12px] text-text-secondary outline-none" />
+                  </div>
+                </div>
+                <button
+                  class="w-full bg-accent hover:bg-accent/90 text-white text-[12px] font-medium rounded px-4 py-2 mt-2 cursor-pointer">Run
+                  Simulation</button>
+              </div>
+
+              <!-- Fan Chart Placeholder -->
+              <div>
+                <div class="text-[11px] uppercase tracking-wider text-text-muted font-medium mb-3">Projected Outcomes
+                  (Fan Chart)</div>
+                <div
+                  class="relative h-[260px] border border-border-subtle rounded bg-surface-2 flex items-center justify-center">
+                  <svg viewBox="0 0 400 200" class="w-full h-full p-4" preserveAspectRatio="none">
+                    <!-- 5th-95th percentile band -->
+                    <path d="M0,180 Q100,170 200,140 Q300,80 400,20" fill="none" stroke="#3b82f6" stroke-opacity="0.1"
+                      stroke-width="80" />
+                    <!-- 25th-75th percentile band -->
+                    <path d="M0,180 Q100,172 200,150 Q300,110 400,60" fill="none" stroke="#3b82f6" stroke-opacity="0.15"
+                      stroke-width="40" />
+                    <!-- Median -->
+                    <path d="M0,180 Q100,174 200,155 Q300,120 400,80" fill="none" stroke="#3b82f6" stroke-width="1.5" />
+                    <!-- Labels -->
+                    <text x="390" y="18" text-anchor="end" fill="#71717a" font-size="9">95th</text>
+                    <text x="390" y="78" text-anchor="end" fill="#a1a1aa" font-size="9">50th</text>
+                    <text x="390" y="175" text-anchor="end" fill="#71717a" font-size="9">5th</text>
+                  </svg>
+                </div>
+                <div class="flex justify-between mt-2 text-[10px] text-text-muted px-1">
+                  <span>Year 0</span><span>Year 10</span><span>Year 20</span><span>Year 30</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ================================================ -->
+        <!-- VIEW: TRANSACTIONS (stub)                         -->
+        <!-- ================================================ -->
+        <div id="view-transactions" class="view hidden">
+          <div class="flex items-center gap-3 mb-4 px-1">
+            <h2 class="text-[14px] font-medium text-text-primary">Transactions</h2>
+            <span class="text-[11px] text-text-muted">Phase 5</span>
+            <div class="ml-auto">
+              <button
+                class="bg-accent hover:bg-accent/90 text-white text-[12px] font-medium rounded px-3 py-[5px] cursor-pointer">+
+                Add Transaction</button>
+            </div>
+          </div>
+          <div class="border border-border-muted rounded bg-surface-1 overflow-hidden">
+            <table class="w-full text-[12px]">
+              <thead>
+                <tr class="text-text-muted text-[10px] uppercase tracking-wider border-b border-border-muted">
+                  <th class="text-left px-3 py-2 font-medium">Date</th>
+                  <th class="text-left px-3 py-2 font-medium">Type</th>
+                  <th class="text-left px-3 py-2 font-medium">Ticker</th>
+                  <th class="text-right px-3 py-2 font-medium">Shares</th>
+                  <th class="text-right px-3 py-2 font-medium">Price</th>
+                  <th class="text-right px-3 py-2 font-medium">Total</th>
+                  <th class="text-right px-3 py-2 font-medium">Fees</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-border-muted" id="transactions-body"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ================================================ -->
+        <!-- VIEW: WATCHLIST (stub)                            -->
+        <!-- ================================================ -->
+        <div id="view-watchlist" class="view hidden">
+          <div class="flex items-center gap-3 mb-4 px-1">
+            <h2 class="text-[14px] font-medium text-text-primary">Watchlists</h2>
+            <span class="text-[11px] text-text-muted">Phase 5</span>
+          </div>
+          <div class="flex gap-2 mb-4">
+            <button
+              class="bg-accent/10 border border-accent/30 text-accent text-[12px] rounded px-3 py-[5px] cursor-pointer">Earnings
+              Watch</button>
+            <button
+              class="bg-surface-2 border border-border-subtle text-text-secondary text-[12px] rounded px-3 py-[5px] cursor-pointer hover:border-border-subtle">Tech
+              Momentum</button>
+            <button
+              class="bg-surface-2 border border-border-subtle text-text-secondary text-[12px] rounded px-3 py-[5px] cursor-pointer hover:border-border-subtle">Dividend
+              Growers</button>
+            <button
+              class="bg-surface-2 border border-border-subtle text-text-muted text-[12px] rounded px-3 py-[5px] cursor-pointer">+
+              New List</button>
+          </div>
+          <div class="border border-border-muted rounded bg-surface-1 overflow-hidden">
+            <table class="w-full text-[12px]">
+              <thead>
+                <tr class="text-text-muted text-[10px] uppercase tracking-wider border-b border-border-muted">
+                  <th class="text-left px-3 py-2 font-medium">Ticker</th>
+                  <th class="text-left px-3 py-2 font-medium">Name</th>
+                  <th class="text-right px-3 py-2 font-medium">Price</th>
+                  <th class="text-right px-3 py-2 font-medium">Day %</th>
+                  <th class="text-right px-3 py-2 font-medium">52w High</th>
+                  <th class="text-right px-3 py-2 font-medium">Earnings</th>
+                  <th class="text-right px-3 py-2 font-medium">Notes</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-border-muted" id="watchlist-body"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ================================================ -->
+        <!-- VIEW: CALCULATORS (stub)                          -->
+        <!-- ================================================ -->
+        <div id="view-calculators" class="view hidden">
+          <div class="flex items-baseline gap-3 mb-4 px-1">
+            <h2 class="text-[14px] font-medium text-text-primary">Financial Calculators</h2>
+            <span class="text-[11px] text-text-muted">Phase 6</span>
+          </div>
+          <div class="grid grid-cols-3 gap-3" id="calc-grid"></div>
+        </div>
+
+        <!-- ================================================ -->
+        <!-- VIEW: COMPARE (stub)                              -->
+        <!-- ================================================ -->
+        <div id="view-compare" class="view hidden">
+          <div class="flex items-baseline gap-3 mb-4 px-1">
+            <h2 class="text-[14px] font-medium text-text-primary">Portfolio Comparison</h2>
+            <span class="text-[11px] text-text-muted">Phase 10</span>
+          </div>
+          <div class="border border-border-muted rounded bg-surface-1 p-6">
+            <div class="text-text-muted text-[12px] mb-4">Compare two or more portfolio configurations side-by-side.
+            </div>
+            <div class="flex gap-3">
+              <div
+                class="flex-1 border border-border-subtle border-dashed rounded p-8 flex flex-col items-center justify-center text-text-muted cursor-pointer hover:border-accent/30">
+                <svg class="w-6 h-6 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <line x1="12" y1="5" x2="12" y2="19" />
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                </svg>
+                <span class="text-[12px]">Add Portfolio A</span>
+              </div>
+              <div
+                class="flex-1 border border-border-subtle border-dashed rounded p-8 flex flex-col items-center justify-center text-text-muted cursor-pointer hover:border-accent/30">
+                <svg class="w-6 h-6 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <line x1="12" y1="5" x2="12" y2="19" />
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                </svg>
+                <span class="text-[12px]">Add Portfolio B</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ================================================ -->
+        <!-- VIEW: NEWS (stub)                                 -->
+        <!-- ================================================ -->
+        <div id="view-news" class="view hidden">
+          <div class="flex items-baseline gap-3 mb-4 px-1">
+            <h2 class="text-[14px] font-medium text-text-primary">News Feed</h2>
+            <span class="text-[11px] text-text-muted">Phase 8</span>
+          </div>
+          <div class="flex gap-2 mb-4">
+            <button
+              class="bg-accent/10 border border-accent/30 text-accent text-[12px] rounded px-3 py-[5px] cursor-pointer">All</button>
+            <button
+              class="bg-surface-2 border border-border-subtle text-text-secondary text-[12px] rounded px-3 py-[5px] cursor-pointer">Portfolio</button>
+            <button
+              class="bg-surface-2 border border-border-subtle text-text-secondary text-[12px] rounded px-3 py-[5px] cursor-pointer">Watchlist</button>
+            <button
+              class="bg-surface-2 border border-border-subtle text-text-secondary text-[12px] rounded px-3 py-[5px] cursor-pointer">Macro</button>
+          </div>
+          <div class="space-y-1" id="news-feed"></div>
+        </div>
+
+        <!-- ================================================ -->
+        <!-- VIEW: CALENDAR (stub)                             -->
+        <!-- ================================================ -->
+        <div id="view-calendar" class="view hidden">
+          <div class="flex items-baseline gap-3 mb-4 px-1">
+            <h2 class="text-[14px] font-medium text-text-primary">Earnings &amp; Economic Calendar</h2>
+            <span class="text-[11px] text-text-muted">Phase 8</span>
+          </div>
+          <div class="flex gap-2 mb-4">
+            <button
+              class="bg-accent/10 border border-accent/30 text-accent text-[12px] rounded px-3 py-[5px] cursor-pointer">This
+              Week</button>
+            <button
+              class="bg-surface-2 border border-border-subtle text-text-secondary text-[12px] rounded px-3 py-[5px] cursor-pointer">Next
+              Week</button>
+            <button
+              class="bg-surface-2 border border-border-subtle text-text-secondary text-[12px] rounded px-3 py-[5px] cursor-pointer">This
+              Month</button>
+          </div>
+          <div class="grid grid-cols-5 gap-2" id="calendar-grid"></div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <script>
+    // ========================
+    // MOCK DATA
+    // ========================
+
+    const holdings = [
+      { ticker: 'AAPL', name: 'Apple Inc.', shares: 450, avgCost: 142.30, price: 198.11, dayChg: 1.24, sector: 'Tech' },
+      { ticker: 'MSFT', name: 'Microsoft Corp.', shares: 280, avgCost: 245.80, price: 428.50, dayChg: 0.68, sector: 'Tech' },
+      { ticker: 'NVDA', name: 'NVIDIA Corp.', shares: 150, avgCost: 312.40, price: 875.30, dayChg: -0.92, sector: 'Tech' },
+      { ticker: 'UNH', name: 'UnitedHealth Group', shares: 120, avgCost: 425.60, price: 527.14, dayChg: 0.31, sector: 'Health' },
+      { ticker: 'JNJ', name: 'Johnson & Johnson', shares: 200, avgCost: 152.10, price: 156.42, dayChg: -0.18, sector: 'Health' },
+      { ticker: 'JPM', name: 'JPMorgan Chase', shares: 180, avgCost: 138.90, price: 198.74, dayChg: 0.84, sector: 'Financials' },
+      { ticker: 'V', name: 'Visa Inc.', shares: 160, avgCost: 215.30, price: 282.06, dayChg: 0.42, sector: 'Financials' },
+      { ticker: 'PG', name: 'Procter & Gamble', shares: 220, avgCost: 138.50, price: 162.87, dayChg: 0.15, sector: 'Consumer' },
+      { ticker: 'KO', name: 'Coca-Cola Co.', shares: 350, avgCost: 52.40, price: 61.28, dayChg: -0.22, sector: 'Consumer' },
+      { ticker: 'XOM', name: 'Exxon Mobil Corp.', shares: 250, avgCost: 78.20, price: 104.62, dayChg: 1.05, sector: 'Energy' },
+      { ticker: 'ABBV', name: 'AbbVie Inc.', shares: 140, avgCost: 128.90, price: 175.34, dayChg: 0.56, sector: 'Health' },
+      { ticker: 'HD', name: 'Home Depot Inc.', shares: 85, avgCost: 298.40, price: 362.18, dayChg: -0.34, sector: 'Consumer' },
+      { ticker: 'BRK.B', name: 'Berkshire Hathaway', shares: 95, avgCost: 310.50, price: 412.60, dayChg: 0.28, sector: 'Financials' },
+      { ticker: 'LLY', name: 'Eli Lilly & Co.', shares: 45, avgCost: 420.10, price: 782.30, dayChg: 1.82, sector: 'Health' },
+    ];
+
+    const annualReturns = [
+      { year: 2015, port: 1.28, bench: 1.38 },
+      { year: 2016, port: 8.31, bench: 11.96 },
+      { year: 2017, port: 12.64, bench: 21.83 },
+      { year: 2018, port: -2.84, bench: -4.38 },
+      { year: 2019, port: 20.12, bench: 31.49 },
+      { year: 2020, port: 15.38, bench: 18.40 },
+      { year: 2021, port: 14.72, bench: 28.71 },
+      { year: 2022, port: -16.92, bench: -18.11 },
+      { year: 2023, port: 17.64, bench: 26.29 },
+      { year: 2024, port: 12.08, bench: 25.02 },
+    ];
+
+    const screenerData = [
+      { ticker: 'JPM', name: 'JPMorgan Chase & Co.', sector: 'Financials', mcap: '$574B', price: 198.74, day: 0.84, ytd: 12.4, divYld: 2.3, pe: 11.8, vol: '12.1M', up: true },
+      { ticker: 'JNJ', name: 'Johnson & Johnson', sector: 'Healthcare', mcap: '$378B', price: 156.42, day: -0.18, ytd: 4.2, divYld: 3.1, pe: 15.2, vol: '7.8M', up: false },
+      { ticker: 'PG', name: 'Procter & Gamble Co.', sector: 'Consumer', mcap: '$382B', price: 162.87, day: 0.15, ytd: 6.8, divYld: 2.4, pe: 24.1, vol: '6.4M', up: true },
+      { ticker: 'XOM', name: 'Exxon Mobil Corp.', sector: 'Energy', mcap: '$442B', price: 104.62, day: 1.05, ytd: -2.1, divYld: 3.5, pe: 12.4, vol: '18.3M', up: false },
+      { ticker: 'ABBV', name: 'AbbVie Inc.', sector: 'Healthcare', mcap: '$310B', price: 175.34, day: 0.56, ytd: 14.7, divYld: 3.6, pe: 14.8, vol: '8.2M', up: true },
+      { ticker: 'KO', name: 'Coca-Cola Co.', sector: 'Consumer', mcap: '$265B', price: 61.28, day: -0.22, ytd: 3.1, divYld: 3.0, pe: 23.4, vol: '14.6M', up: true },
+      { ticker: 'PFE', name: 'Pfizer Inc.', sector: 'Healthcare', mcap: '$158B', price: 28.14, day: -1.32, ytd: -8.4, divYld: 5.8, pe: 10.2, vol: '32.1M', up: false },
+      { ticker: 'BAC', name: 'Bank of America Corp.', sector: 'Financials', mcap: '$312B', price: 39.82, day: 0.92, ytd: 18.2, divYld: 2.6, pe: 12.1, vol: '38.4M', up: true },
+      { ticker: 'CVX', name: 'Chevron Corp.', sector: 'Energy', mcap: '$284B', price: 152.38, day: 0.74, ytd: -4.8, divYld: 4.1, pe: 11.6, vol: '9.2M', up: false },
+      { ticker: 'MRK', name: 'Merck & Co. Inc.', sector: 'Healthcare', mcap: '$314B', price: 124.56, day: 0.38, ytd: 8.9, divYld: 2.5, pe: 18.4, vol: '10.8M', up: true },
+      { ticker: 'CSCO', name: 'Cisco Systems Inc.', sector: 'Tech', mcap: '$204B', price: 50.12, day: 0.62, ytd: 11.2, divYld: 3.1, pe: 14.6, vol: '19.2M', up: true },
+      { ticker: 'VZ', name: 'Verizon Comms Inc.', sector: 'Telecom', mcap: '$168B', price: 39.84, day: -0.44, ytd: 2.8, divYld: 6.8, pe: 8.4, vol: '16.8M', up: false },
+      { ticker: 'IBM', name: 'Intl Business Machines', sector: 'Tech', mcap: '$192B', price: 210.34, day: 0.28, ytd: 22.4, divYld: 3.2, pe: 22.8, vol: '4.8M', up: true },
+      { ticker: 'TXN', name: 'Texas Instruments Inc.', sector: 'Tech', mcap: '$172B', price: 188.42, day: -0.56, ytd: 9.4, divYld: 2.7, pe: 24.2, vol: '5.6M', up: true },
+      { ticker: 'BMY', name: 'Bristol-Myers Squibb', sector: 'Healthcare', mcap: '$98B', price: 48.26, day: 1.14, ytd: -6.2, divYld: 4.8, pe: 7.2, vol: '14.2M', up: false },
+      { ticker: 'PM', name: 'Philip Morris Intl', sector: 'Consumer', mcap: '$194B', price: 124.80, day: 0.22, ytd: 18.6, divYld: 5.2, pe: 18.6, vol: '5.1M', up: true },
+      { ticker: 'SO', name: 'Southern Company', sector: 'Utilities', mcap: '$86B', price: 78.92, day: 0.08, ytd: 5.4, divYld: 3.6, pe: 20.4, vol: '4.2M', up: true },
+      { ticker: 'GIS', name: 'General Mills Inc.', sector: 'Consumer', mcap: '$38B', price: 68.14, day: -0.32, ytd: -2.8, divYld: 3.4, pe: 15.8, vol: '3.8M', up: false },
+      { ticker: 'MMM', name: '3M Company', sector: 'Industrial', mcap: '$62B', price: 112.48, day: 0.94, ytd: 28.4, divYld: 2.2, pe: 13.2, vol: '3.4M', up: true },
+      { ticker: 'CAT', name: 'Caterpillar Inc.', sector: 'Industrial', mcap: '$172B', price: 348.22, day: -0.68, ytd: 8.2, divYld: 2.0, pe: 16.8, vol: '3.1M', up: true },
+    ];
+
+    const transactionData = [
+      { date: '2025-03-20', type: 'BUY', ticker: 'NVDA', shares: 25, price: 872.40, fees: 0 },
+      { date: '2025-03-18', type: 'SELL', ticker: 'PFE', shares: 100, price: 28.90, fees: 0 },
+      { date: '2025-03-15', type: 'BUY', ticker: 'LLY', shares: 10, price: 778.20, fees: 0 },
+      { date: '2025-03-12', type: 'DIV', ticker: 'AAPL', shares: 450, price: 0.25, fees: 0 },
+      { date: '2025-03-10', type: 'BUY', ticker: 'JPM', shares: 30, price: 196.40, fees: 0 },
+      { date: '2025-03-05', type: 'SELL', ticker: 'XOM', shares: 50, price: 106.80, fees: 0 },
+      { date: '2025-02-28', type: 'BUY', ticker: 'MSFT', shares: 20, price: 422.10, fees: 0 },
+      { date: '2025-02-25', type: 'DIV', ticker: 'KO', shares: 350, price: 0.485, fees: 0 },
+    ];
+
+    const watchlistData = [
+      { ticker: 'AMZN', name: 'Amazon.com Inc.', price: 186.42, day: 1.28, high52: 192.80, earnings: 'Apr 24', notes: 'AWS growth' },
+      { ticker: 'GOOGL', name: 'Alphabet Inc.', price: 158.94, day: 0.64, high52: 174.30, earnings: 'Apr 22', notes: 'AI search' },
+      { ticker: 'META', name: 'Meta Platforms Inc.', price: 512.80, day: -0.48, high52: 542.10, earnings: 'Apr 30', notes: 'Reels monetization' },
+      { ticker: 'COST', name: 'Costco Wholesale', price: 912.34, day: 0.18, high52: 932.40, earnings: 'May 29', notes: 'Membership growth' },
+      { ticker: 'CRM', name: 'Salesforce Inc.', price: 278.60, day: 1.42, high52: 318.90, earnings: 'May 28', notes: 'AI agent platform' },
+    ];
+
+    const newsData = [
+      { time: '2:45 PM', source: 'Reuters', title: 'Fed officials signal patience on rate cuts amid sticky inflation', tickers: ['SPY'] },
+      { time: '1:30 PM', source: 'Bloomberg', title: 'NVIDIA accelerates Blackwell production to meet AI demand surge', tickers: ['NVDA'] },
+      { time: '12:15 PM', source: 'WSJ', title: 'JPMorgan raises dividend by 12%, announces $30B buyback program', tickers: ['JPM'] },
+      { time: '11:48 AM', source: 'CNBC', title: 'Treasury yields climb as March jobs report exceeds expectations', tickers: ['TLT', 'AGG'] },
+      { time: '10:20 AM', source: 'FT', title: 'European Central Bank holds rates steady, signals June cut likely', tickers: ['EFA'] },
+      { time: '9:45 AM', source: 'Reuters', title: 'Oil prices surge on Middle East supply disruption fears', tickers: ['XOM', 'CVX'] },
+      { time: '9:15 AM', source: 'Barrons', title: 'Eli Lilly obesity drug shows promising Phase 3 trial results', tickers: ['LLY'] },
+      { time: '8:30 AM', source: 'FRED', title: 'Initial jobless claims fall to 210K, below 220K consensus', tickers: [] },
+    ];
+
+    const calendarData = [
+      { day: 'Mon', date: 'Mar 24', events: [{ type: 'economic', label: 'PMI Flash' }, { type: 'earnings', label: 'NKE' }] },
+      { day: 'Tue', date: 'Mar 25', events: [{ type: 'economic', label: 'Consumer Confidence' }, { type: 'earnings', label: 'GME' }] },
+      { day: 'Wed', date: 'Mar 26', events: [{ type: 'earnings', label: 'DLTR' }, { type: 'earnings', label: 'CTAS' }] },
+      { day: 'Thu', date: 'Mar 27', events: [{ type: 'economic', label: 'GDP (Final)' }, { type: 'economic', label: 'Jobless Claims' }] },
+      { day: 'Fri', date: 'Mar 28', events: [{ type: 'economic', label: 'PCE Price Index' }, { type: 'economic', label: 'Personal Income' }] },
+    ];
+
+    const calculators = [
+      { id: 'compound', name: 'Compound Growth', desc: 'Project future value with periodic contributions', icon: 'trending-up' },
+      { id: 'retirement', name: 'Retirement Planner', desc: 'Multi-phase retirement projection with Social Security', icon: 'sunset' },
+      { id: 'withdrawal', name: 'Withdrawal Strategy', desc: 'Compare fixed, percentage, and guardrails approaches', icon: 'arrow-down-circle' },
+      { id: 'options', name: 'Options Payoff', desc: 'Visualize P&L for single and multi-leg strategies', icon: 'git-branch' },
+      { id: 'taxloss', name: 'Tax-Loss Harvesting', desc: 'Estimate after-tax benefit of harvesting candidates', icon: 'scissors' },
+      { id: 'rr', name: 'Risk / Reward', desc: 'Entry, target, stop-loss analysis with position sizing', icon: 'target' },
+      { id: 'position', name: 'Position Sizing', desc: 'Kelly criterion and fixed-risk share calculation', icon: 'sliders' },
+      { id: 'margin', name: 'Margin Calculator', desc: 'Reg-T and portfolio margin estimates', icon: 'percent' },
+      { id: 'dca', name: 'DCA vs. Lump Sum', desc: 'Historical comparison of investment timing strategies', icon: 'repeat' },
+    ];
+
+    // ========================
+    // RENDER FUNCTIONS
+    // ========================
+
+    function fmtNum(n, decimals = 2) {
+      return n.toLocaleString('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+    }
+
+    function colorClass(val) {
+      return val > 0 ? 'text-gain' : val < 0 ? 'text-loss' : 'text-text-secondary';
+    }
+
+    function sign(val) {
+      return val > 0 ? '+' : '';
+    }
+
+    function miniSparkline(up, seed = 1) {
+      const pts = [];
+      let y = 15;
+      for (let i = 0; i <= 10; i++) {
+        const wave = Math.sin((i + 1) * (seed * 0.73)) * 0.5 + Math.cos((i + 2) * (seed * 0.37)) * 0.35;
+        y += (wave - (up ? -0.1 : 0.15)) * 4;
+        y = Math.max(2, Math.min(28, y));
+        pts.push(`${i * 6},${y}`);
+      }
+      const color = up ? '#22c55e' : '#ef4444';
+      return `<svg viewBox="0 0 60 30" class="w-[60px] h-[20px]"><polyline points="${pts.join(' ')}" fill="none" stroke="${color}" stroke-width="1.5"/></svg>`;
+    }
+
+    function renderHoldings(targetId = 'holdings-body') {
+      const totalMv = holdings.reduce((s, h) => s + h.shares * h.price, 0);
+      document.getElementById(targetId).innerHTML = holdings.map(h => {
+        const mv = h.shares * h.price;
+        const totalCost = h.shares * h.avgCost;
+        const totalRet = ((mv - totalCost) / totalCost) * 100;
+        const weight = (mv / totalMv) * 100;
+        return `<tr class="h-[34px]">
+      <td class="px-3 py-1 font-medium text-text-primary">${h.ticker}</td>
+      <td class="px-3 py-1 text-text-muted truncate max-w-[140px]">${h.name}</td>
+      <td class="px-3 py-1 text-right text-text-secondary">${fmtNum(h.shares, 0)}</td>
+      <td class="px-3 py-1 text-right text-text-secondary">$${fmtNum(h.avgCost)}</td>
+      <td class="px-3 py-1 text-right text-text-primary">$${fmtNum(h.price)}</td>
+      <td class="px-3 py-1 text-right text-text-secondary">$${fmtNum(mv, 0)}</td>
+      <td class="px-3 py-1 text-right ${colorClass(h.dayChg)}">${sign(h.dayChg)}${fmtNum(h.dayChg)}%</td>
+      <td class="px-3 py-1 text-right ${colorClass(totalRet)}">${sign(totalRet)}${fmtNum(totalRet, 1)}%</td>
+      <td class="px-3 py-1 text-right text-text-muted">${fmtNum(weight, 1)}%</td>
+    </tr>`;
+      }).join('');
+    }
+
+    function renderAnnualReturns() {
+      document.getElementById('annual-returns-body').innerHTML = annualReturns.map(r => {
+        const excess = r.port - r.bench;
+        return `<tr class="h-[30px]">
+      <td class="px-3 py-1 text-text-secondary">${r.year}</td>
+      <td class="px-3 py-1 text-right ${colorClass(r.port)}">${sign(r.port)}${fmtNum(r.port)}%</td>
+      <td class="px-3 py-1 text-right ${colorClass(r.bench)}">${sign(r.bench)}${fmtNum(r.bench)}%</td>
+      <td class="px-3 py-1 text-right ${colorClass(excess)}">${sign(excess)}${fmtNum(excess)}%</td>
+    </tr>`;
+      }).join('');
+    }
+
+    function renderScreener() {
+      document.getElementById('screener-body').innerHTML = screenerData.map((s, index) => {
+        return `<tr class="h-[34px]">
+      <td class="px-3 py-1 font-medium text-text-primary">${s.ticker}</td>
+      <td class="px-3 py-1 text-text-secondary truncate max-w-[180px]">${s.name}</td>
+      <td class="px-3 py-1 text-text-muted">${s.sector}</td>
+      <td class="px-3 py-1 text-right text-text-secondary">${s.mcap}</td>
+      <td class="px-3 py-1 text-right text-text-primary">$${fmtNum(s.price)}</td>
+      <td class="px-3 py-1 text-right ${colorClass(s.day)}">${sign(s.day)}${fmtNum(s.day)}%</td>
+      <td class="px-3 py-1 text-right ${colorClass(s.ytd)}">${sign(s.ytd)}${fmtNum(s.ytd)}%</td>
+      <td class="px-3 py-1 text-right text-text-secondary">${fmtNum(s.divYld)}%</td>
+      <td class="px-3 py-1 text-right text-text-secondary">${fmtNum(s.pe, 1)}</td>
+      <td class="px-3 py-1 text-right text-text-muted">${s.vol}</td>
+      <td class="px-3 py-1 flex justify-center">${miniSparkline(s.up, index + 1)}</td>
+    </tr>`;
+      }).join('');
+    }
+
+    function renderTransactions() {
+      document.getElementById('transactions-body').innerHTML = transactionData.map(t => {
+        const total = t.shares * t.price;
+        return `<tr class="h-[34px]">
+      <td class="px-3 py-1 text-text-secondary">${t.date}</td>
+      <td class="px-3 py-1 ${t.type === 'BUY' ? 'text-gain' : t.type === 'SELL' ? 'text-loss' : 'text-accent'} font-medium">${t.type}</td>
+      <td class="px-3 py-1 text-text-primary">${t.ticker}</td>
+      <td class="px-3 py-1 text-right text-text-secondary">${fmtNum(t.shares, 0)}</td>
+      <td class="px-3 py-1 text-right text-text-secondary">${t.type === 'DIV' ? '$' + fmtNum(t.price, 3) : '$' + fmtNum(t.price)}</td>
+      <td class="px-3 py-1 text-right text-text-primary">$${fmtNum(total)}</td>
+      <td class="px-3 py-1 text-right text-text-muted">$${fmtNum(t.fees)}</td>
+    </tr>`;
+      }).join('');
+    }
+
+    function renderWatchlist() {
+      document.getElementById('watchlist-body').innerHTML = watchlistData.map(w => `
+    <tr class="h-[34px]">
+      <td class="px-3 py-1 font-medium text-text-primary">${w.ticker}</td>
+      <td class="px-3 py-1 text-text-secondary">${w.name}</td>
+      <td class="px-3 py-1 text-right text-text-primary">$${fmtNum(w.price)}</td>
+      <td class="px-3 py-1 text-right ${colorClass(w.day)}">${sign(w.day)}${fmtNum(w.day)}%</td>
+      <td class="px-3 py-1 text-right text-text-secondary">$${fmtNum(w.high52)}</td>
+      <td class="px-3 py-1 text-right text-text-secondary">${w.earnings}</td>
+      <td class="px-3 py-1 text-right text-text-muted">${w.notes}</td>
+    </tr>
+  `).join('');
+    }
+
+    function renderCalculators() {
+      document.getElementById('calc-grid').innerHTML = calculators.map(c => `
+    <div class="border border-border-muted rounded bg-surface-1 p-4 hover:border-accent/30 cursor-pointer transition-colors">
+      <div class="text-[13px] font-medium text-text-primary mb-1">${c.name}</div>
+      <div class="text-[11px] text-text-muted">${c.desc}</div>
+    </div>
+  `).join('');
+    }
+
+    function renderNews() {
+      document.getElementById('news-feed').innerHTML = newsData.map(n => `
+    <div class="border border-border-muted rounded bg-surface-1 px-3 py-3 flex items-start gap-3">
+      <div class="text-[10px] text-text-muted w-[60px] flex-shrink-0">${n.time}</div>
+      <div class="min-w-0 flex-1">
+        <div class="text-[11px] text-text-muted mb-0.5">${n.source}${n.tickers.length ? ' • ' + n.tickers.join(', ') : ''}</div>
+        <div class="text-[12px] text-text-secondary">${n.title}</div>
+      </div>
+    </div>
+  `).join('');
+    }
+
+    function renderCalendar() {
+      document.getElementById('calendar-grid').innerHTML = calendarData.map(d => {
+        const events = d.events.map(e => `
+      <div class="rounded bg-surface-2 border border-border-subtle px-2 py-1 text-[10px] text-text-secondary">${e.label}</div>
+    `).join('');
+        return `<div class="border border-border-muted rounded bg-surface-1 p-3 min-h-[140px]">
+      <div class="text-[10px] text-text-muted uppercase tracking-wider">${d.day}</div>
+      <div class="text-[13px] text-text-primary font-medium mb-2">${d.date}</div>
+      ${events}
+    </div>`;
+      }).join('');
+    }
+
+    // ========================
+    // NAVIGATION
+    // ========================
+
+    const breadcrumbMap = {
+      dashboard: ['Tracking', 'Dashboard'],
+      portfolio: ['Tracking', 'Portfolio'],
+      backtest: ['Analysis', 'Backtesting'],
+      montecarlo: ['Analysis', 'Monte Carlo'],
+      transactions: ['Tracking', 'Transactions'],
+      watchlist: ['Tracking', 'Watchlists'],
+      calculators: ['Tools', 'Calculators'],
+      compare: ['Tools', 'Compare'],
+      screener: ['Market', 'Screener'],
+      news: ['Market', 'News'],
+      calendar: ['Market', 'Calendar'],
+    };
+
+    function switchView(viewId) {
+      document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
+      const target = document.getElementById('view-' + viewId);
+      if (target) target.classList.remove('hidden');
+
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+      document.querySelectorAll(`.nav-item[data-view="${viewId}"]`).forEach(n => n.classList.add('active'));
+
+      const bc = breadcrumbMap[viewId] || ['', ''];
+      document.getElementById('breadcrumb-section').textContent = bc[0];
+      document.getElementById('breadcrumb-page').textContent = bc[1];
+    }
+
+    document.querySelectorAll('.nav-item[data-view]').forEach(item => {
+      item.addEventListener('click', (e) => {
+        e.preventDefault();
+        switchView(item.dataset.view);
+      });
+    });
+
+    let collapsed = false;
+    document.getElementById('sidebar-toggle').addEventListener('click', () => {
+      collapsed = !collapsed;
+      document.getElementById('app').classList.toggle('sidebar-collapsed', collapsed);
+      document.getElementById('sidebar').style.width = collapsed ? '48px' : '240px';
+    });
+
+    // ========================
+    // INIT
+    // ========================
+    renderHoldings();
+    renderHoldings('portfolio-holdings-body');
+    renderAnnualReturns();
+    renderScreener();
+    renderTransactions();
+    renderWatchlist();
+    renderCalculators();
+    renderNews();
+    renderCalendar();
+    switchView('dashboard');
+  </script>
+
+</body>
+
+</html>
