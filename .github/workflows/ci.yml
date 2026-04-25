@@ -13,10 +13,10 @@ concurrency:
 # Centralize Rust toolchain config so individual steps stay terse.
 env:
   CARGO_TERM_COLOR: always
-  CARGO_INCREMENTAL: 0       # Disable incremental compilation in CI — slower
-                             # locally for dev loops, faster + smaller for
-                             # one-shot CI builds where each compilation is
-                             # done from scratch or from a sccache hit.
+  # Disable incremental compilation in CI — slower locally for dev loops
+  # but faster and smaller for one-shot CI builds where each compilation
+  # starts from scratch or from a remote cache hit.
+  CARGO_INCREMENTAL: 0
   RUSTFLAGS: "-D warnings"
 
 jobs:
