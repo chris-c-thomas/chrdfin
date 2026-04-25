@@ -291,9 +291,9 @@ Done before Phase 1 starts producing changelog churn. Concrete tasks:
 
 ---
 
-## Code-signing & notarization (post-public)
+## Code-signing & notarization
 
-The project is **private** until it's more feature-complete. Code signing is deferred to that public-launch milestone:
+The project is **public from v0.0.1** but **distribution-restricted** — installer builds and code signing are still deferred to a later milestone. Public-but-unsigned binaries trigger Gatekeeper / SmartScreen warnings, so we don't publish them yet.
 
 | Platform | What's needed |
 |---|---|

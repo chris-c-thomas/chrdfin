@@ -10,6 +10,15 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+# Centralize Rust toolchain config so individual steps stay terse.
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: 0       # Disable incremental compilation in CI — slower
+                             # locally for dev loops, faster + smaller for
+                             # one-shot CI builds where each compilation is
+                             # done from scratch or from a sccache hit.
+  RUSTFLAGS: "-D warnings"
+
 jobs:
   typescript:
     name: TypeScript Quality
@@ -46,11 +55,32 @@ jobs:
       - name: Test
         run: pnpm test
 
-  rust:
-    name: Rust Quality
+  # Fast path: blocks PR merges. Runs on every push and PR.
+  # Builds chrdfin-core fully (including tests) and the Tauri desktop crate
+  # for compile + lint only. Skips the test compile profile for the desktop
+  # crate, which is what doubles wall-clock time and disk usage.
+  rust-fast:
+    name: Rust (check + clippy)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      # GitHub-hosted Linux runners ship with ~14 GB free disk. The bundled
+      # DuckDB build + Tauri's full dep tree consumes most of that. These
+      # removals reclaim ~25-30 GB of preinstalled tooling we never use.
+      - name: Free disk space
+        run: |
+          echo "Before:"
+          df -h /
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /opt/hostedtoolcache/CodeQL
+          sudo rm -rf /imagegeneration
+          sudo apt-get clean
+          docker system prune -af || true
+          echo "After:"
+          df -h /
 
       - name: Install Linux build deps for Tauri
         run: |
@@ -66,18 +96,73 @@ jobs:
         with:
           components: rustfmt, clippy
 
+      # `shared-key` keeps the cache valid across PRs and lockfile drift —
+      # a Phase N PR adding new crates still reuses cached builds of every
+      # unchanged dep (tauri, wry, duckdb-sys, etc.). Without this the cache
+      # invalidates on any Cargo.lock change.
+      # `save-if` only writes new entries from main pushes, so PRs read but
+      # don't pollute the canonical cache.
       - uses: Swatinem/rust-cache@v2
         with:
           workspaces: ". -> target"
+          shared-key: "rust-${{ runner.os }}-stable"
+          save-if: ${{ github.ref == 'refs/heads/main' }}
 
       - name: cargo fmt
         run: cargo fmt --all --check
 
-      - name: cargo check
-        run: cargo check --workspace --all-targets
+      # chrdfin-core is small and pure-Rust — full --all-targets is cheap.
+      # chrdfin-desktop pulls in tauri + bundled DuckDB; only check the lib
+      # profile (no test build) here. Tests for the desktop crate run in
+      # the `rust-test` job on push to main.
+      - name: cargo check (chrdfin-core, all targets)
+        run: cargo check -p chrdfin-core --all-targets
 
-      - name: cargo clippy
-        run: cargo clippy --workspace --all-targets -- -D warnings
+      - name: cargo check (chrdfin-desktop, lib only)
+        run: cargo check -p chrdfin-desktop
 
-      - name: cargo test
-        run: cargo test --workspace
+      - name: cargo clippy (chrdfin-core, all targets)
+        run: cargo clippy -p chrdfin-core --all-targets -- -D warnings
+
+      - name: cargo clippy (chrdfin-desktop, lib only)
+        run: cargo clippy -p chrdfin-desktop -- -D warnings
+
+  # Slow path: runs only on push to main. Reuses the cache from rust-fast.
+  # Tests chrdfin-core (the only crate that has meaningful tests right now);
+  # chrdfin-desktop tests will land here as the command surface grows.
+  rust-test:
+    name: Rust (test)
+    runs-on: ubuntu-latest
+    needs: rust-fast
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/lib/android \
+                       /opt/hostedtoolcache/CodeQL /imagegeneration
+          sudo apt-get clean
+          docker system prune -af || true
+          df -h /
+
+      - name: Install Linux build deps for Tauri
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libwebkit2gtk-4.1-dev \
+            libappindicator3-dev \
+            librsvg2-dev \
+            patchelf \
+            libssl-dev
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: ". -> target"
+          shared-key: "rust-${{ runner.os }}-stable"
+          save-if: ${{ github.ref == 'refs/heads/main' }}
+
+      - name: cargo test (chrdfin-core)
+        run: cargo test -p chrdfin-core

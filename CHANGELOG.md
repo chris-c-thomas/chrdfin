@@ -12,6 +12,21 @@ full versioning and release policy.
 
 ## [Unreleased]
 
+### Changed
+
+- **CI restructured for capacity and feedback latency.** Split the Rust job
+  into a fast path (`cargo check` + `cargo clippy` per crate, blocks PR
+  merges) and a slow path (`cargo test`, runs only on push to `main`).
+  Added a "Free disk space" step that reclaims ~25–30 GB of preinstalled
+  runner tooling so the bundled-DuckDB build stops exhausting disk.
+  Tightened the `Swatinem/rust-cache@v2` cache with `shared-key` and
+  `save-if: refs/heads/main` so PRs read the cache but don't pollute it,
+  and unchanged crates survive `Cargo.lock` drift.
+- **Removed `staticlib` from the Tauri desktop crate's `[lib].crate-type`.**
+  Tauri v2 desktop builds only need `cdylib` (Tauri loads at runtime) and
+  `rlib` (for `main.rs` to link). The `staticlib` archive was the largest
+  single artifact in the build and wasn't consumed anywhere.
+
 ## [0.0.1] - 2026-04-25
 
 Phase 0 — Foundation & Tooling. The first tagged build of chrdfin: a running
