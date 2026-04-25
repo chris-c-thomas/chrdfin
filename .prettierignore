@@ -1,0 +1,7 @@
+node_modules
+dist
+target
+coverage
+pnpm-lock.yaml
+Cargo.lock
+**/routeTree.gen.ts

@@ -1,0 +1,29 @@
+{
+  "name": "chrdfin",
+  "private": true,
+  "packageManager": "pnpm@10.33.0",
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "typecheck": "turbo run typecheck",
+    "lint": "turbo run lint",
+    "lint:fix": "turbo run lint:fix",
+    "test": "turbo run test",
+    "test:watch": "turbo run test:watch",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "tauri": "pnpm --filter desktop tauri",
+    "tauri:dev": "pnpm --filter desktop tauri dev",
+    "tauri:build": "pnpm --filter desktop tauri build",
+    "clean": "turbo run clean && rm -rf node_modules"
+  },
+  "devDependencies": {
+    "prettier": "^3.4.2",
+    "prettier-plugin-tailwindcss": "^0.6.11",
+    "turbo": "^2.4.4",
+    "typescript": "^5.7.3"
+  }
+}
