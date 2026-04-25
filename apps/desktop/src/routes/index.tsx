@@ -30,7 +30,7 @@ function DashboardPage(): JSX.Element {
     <div className="p-6">
       <div className="mb-6 flex flex-col gap-1">
         <h1 className="text-lg font-medium">Dashboard</h1>
-        <p className="text-xs text-muted-foreground">
+        <p className="text-muted-foreground text-xs">
           Phase 0 — platform shell, schema initialization, and IPC round-trip verification.
         </p>
       </div>
@@ -43,9 +43,7 @@ function DashboardPage(): JSX.Element {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <pre className="overflow-x-auto rounded-sm bg-muted p-3 font-mono text-xs">
-            {health}
-          </pre>
+          <pre className="bg-muted overflow-x-auto rounded-sm p-3 font-mono text-xs">{health}</pre>
         </CardContent>
       </Card>
     </div>

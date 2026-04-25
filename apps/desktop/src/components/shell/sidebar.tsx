@@ -120,16 +120,13 @@ export function AppSidebar(): JSX.Element {
           onClick={toggle}
           aria-label={open ? "Collapse sidebar" : "Expand sidebar"}
           className={cn(
-            "flex h-8 w-full items-center gap-2 rounded-sm px-2 text-xs text-muted-foreground transition-colors",
+            "text-muted-foreground flex h-8 w-full items-center gap-2 rounded-sm px-2 text-xs transition-colors",
             "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring",
+            "focus-visible:ring-sidebar-ring focus-visible:outline-none focus-visible:ring-2",
           )}
         >
           <ChevronLeft
-            className={cn(
-              "size-4 shrink-0 transition-transform",
-              !open && "rotate-180",
-            )}
+            className={cn("size-4 shrink-0 transition-transform", !open && "rotate-180")}
           />
           {open && <span>Collapse</span>}
         </button>

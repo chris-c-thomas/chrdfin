@@ -6,10 +6,7 @@ export const Card = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => (
     <div
       ref={ref}
-      className={cn(
-        "rounded-md border border-border bg-card text-card-foreground",
-        className,
-      )}
+      className={cn("border-border bg-card text-card-foreground rounded-md border", className)}
       {...props}
     />
   ),
@@ -25,11 +22,7 @@ CardHeader.displayName = "CardHeader";
 
 export const CardTitle = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => (
-    <div
-      ref={ref}
-      className={cn("text-md font-medium leading-tight", className)}
-      {...props}
-    />
+    <div ref={ref} className={cn("text-md font-medium leading-tight", className)} {...props} />
   ),
 );
 CardTitle.displayName = "CardTitle";
@@ -38,11 +31,7 @@ export const CardDescription = forwardRef<
   HTMLParagraphElement,
   HTMLAttributes<HTMLParagraphElement>
 >(({ className, ...props }, ref) => (
-  <p
-    ref={ref}
-    className={cn("text-xs text-muted-foreground", className)}
-    {...props}
-  />
+  <p ref={ref} className={cn("text-muted-foreground text-xs", className)} {...props} />
 ));
 CardDescription.displayName = "CardDescription";
 
@@ -55,11 +44,7 @@ CardContent.displayName = "CardContent";
 
 export const CardFooter = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => (
-    <div
-      ref={ref}
-      className={cn("flex items-center p-4 pt-0", className)}
-      {...props}
-    />
+    <div ref={ref} className={cn("flex items-center p-4 pt-0", className)} {...props} />
   ),
 );
 CardFooter.displayName = "CardFooter";

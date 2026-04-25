@@ -15,7 +15,7 @@ function RootLayout(): JSX.Element {
 
   return (
     <SidebarProvider defaultOpen>
-      <div className="flex h-screen w-screen overflow-hidden bg-background text-foreground">
+      <div className="bg-background text-foreground flex h-screen w-screen overflow-hidden">
         <AppSidebar />
         <div className="flex flex-1 flex-col overflow-hidden">
           <AppHeader onOpenCommandPalette={() => setPaletteOpen(true)} />

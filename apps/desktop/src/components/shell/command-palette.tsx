@@ -1,9 +1,4 @@
-import {
-  CommandDialog,
-  CommandEmpty,
-  CommandInput,
-  CommandList,
-} from "@chrdfin/ui";
+import { CommandDialog, CommandEmpty, CommandInput, CommandList } from "@chrdfin/ui";
 import { useEffect, type JSX } from "react";
 
 export interface CommandPaletteProps {

@@ -3,7 +3,7 @@ import { type JSX } from "react";
 
 export function RoutePending(): JSX.Element {
   return (
-    <div className="flex h-full items-center justify-center text-xs text-muted-foreground">
+    <div className="text-muted-foreground flex h-full items-center justify-center text-xs">
       Loading…
     </div>
   );
@@ -12,19 +12,19 @@ export function RoutePending(): JSX.Element {
 export function RouteErrorBoundary({ error, reset }: ErrorComponentProps): JSX.Element {
   return (
     <div className="flex h-full flex-col items-center justify-center gap-3 p-6">
-      <div className="text-md font-medium text-destructive">Something went wrong</div>
-      <pre className="max-w-2xl whitespace-pre-wrap font-mono text-xs text-muted-foreground">
+      <div className="text-md text-destructive font-medium">Something went wrong</div>
+      <pre className="text-muted-foreground max-w-2xl whitespace-pre-wrap font-mono text-xs">
         {error instanceof Error ? error.message : String(error)}
       </pre>
       <div className="flex gap-2 pt-2">
         <button
           type="button"
           onClick={reset}
-          className="border border-border px-3 py-1 text-xs hover:bg-accent"
+          className="border-border hover:bg-accent border px-3 py-1 text-xs"
         >
           Reset
         </button>
-        <Link to="/" className="border border-border px-3 py-1 text-xs hover:bg-accent">
+        <Link to="/" className="border-border hover:bg-accent border px-3 py-1 text-xs">
           Home
         </Link>
       </div>
@@ -32,20 +32,17 @@ export function RouteErrorBoundary({ error, reset }: ErrorComponentProps): JSX.E
   );
 }
 
-export function SectionErrorBoundary({
-  error,
-  reset,
-}: ErrorComponentProps): JSX.Element {
+export function SectionErrorBoundary({ error, reset }: ErrorComponentProps): JSX.Element {
   return (
     <div className="flex h-full flex-col items-center justify-center gap-3 p-6">
-      <div className="text-md font-medium text-destructive">Section unavailable</div>
-      <pre className="max-w-2xl whitespace-pre-wrap font-mono text-xs text-muted-foreground">
+      <div className="text-md text-destructive font-medium">Section unavailable</div>
+      <pre className="text-muted-foreground max-w-2xl whitespace-pre-wrap font-mono text-xs">
         {error instanceof Error ? error.message : String(error)}
       </pre>
       <button
         type="button"
         onClick={reset}
-        className="border border-border px-3 py-1 text-xs hover:bg-accent"
+        className="border-border hover:bg-accent border px-3 py-1 text-xs"
       >
         Retry
       </button>
@@ -57,7 +54,7 @@ export function RouteNotFound(): JSX.Element {
   return (
     <div className="flex h-full flex-col items-center justify-center gap-3 p-6">
       <div className="text-md font-medium">Route not found</div>
-      <Link to="/" className="border border-border px-3 py-1 text-xs hover:bg-accent">
+      <Link to="/" className="border-border hover:bg-accent border px-3 py-1 text-xs">
         Home
       </Link>
     </div>
@@ -78,10 +75,8 @@ export function PhasePlaceholder({
   return (
     <div className="flex h-full flex-col items-center justify-center gap-2 p-6 text-center">
       <div className="text-md font-medium">{feature}</div>
-      {description && (
-        <div className="max-w-md text-xs text-muted-foreground">{description}</div>
-      )}
-      <div className="text-xs text-muted-foreground">Coming in Phase {phase}.</div>
+      {description && <div className="text-muted-foreground max-w-md text-xs">{description}</div>}
+      <div className="text-muted-foreground text-xs">Coming in Phase {phase}.</div>
     </div>
   );
 }

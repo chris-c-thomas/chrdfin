@@ -50,7 +50,7 @@ export function AppHeader({ onOpenCommandPalette }: AppHeaderProps): JSX.Element
   const { resolvedTheme, setTheme } = useTheme();
 
   return (
-    <header className="flex h-10 shrink-0 items-center gap-4 border-b border-border bg-background px-4">
+    <header className="border-border bg-background flex h-10 shrink-0 items-center gap-4 border-b px-4">
       <Breadcrumb className="flex-1">
         <BreadcrumbList>
           {segments.map((segment, i) => {
@@ -61,10 +61,7 @@ export function AppHeader({ onOpenCommandPalette }: AppHeaderProps): JSX.Element
                   {isLast || !segment.href ? (
                     <BreadcrumbPage>{segment.label}</BreadcrumbPage>
                   ) : (
-                    <Link
-                      to={segment.href}
-                      className="transition-colors hover:text-foreground"
-                    >
+                    <Link to={segment.href} className="hover:text-foreground transition-colors">
                       {segment.label}
                     </Link>
                   )}
@@ -80,14 +77,14 @@ export function AppHeader({ onOpenCommandPalette }: AppHeaderProps): JSX.Element
         type="button"
         onClick={onOpenCommandPalette}
         className={cn(
-          "flex h-7 w-80 items-center gap-2 rounded-sm border border-border bg-card px-2 text-xs text-muted-foreground transition-colors",
+          "border-border bg-card text-muted-foreground flex h-7 w-80 items-center gap-2 rounded-sm border px-2 text-xs transition-colors",
           "hover:border-muted-foreground/40 hover:text-foreground",
-          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+          "focus-visible:ring-ring focus-visible:outline-none focus-visible:ring-2",
         )}
       >
         <Search className="size-3.5" />
         <span className="flex-1 text-left">Search tickers, portfolios, tools…</span>
-        <kbd className="font-mono text-xs text-muted-foreground">⌘K</kbd>
+        <kbd className="text-muted-foreground font-mono text-xs">⌘K</kbd>
       </button>
 
       <MarketStatusIndicator />
@@ -97,9 +94,9 @@ export function AppHeader({ onOpenCommandPalette }: AppHeaderProps): JSX.Element
         onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
         aria-label={`Switch to ${resolvedTheme === "dark" ? "light" : "dark"} theme`}
         className={cn(
-          "flex size-7 items-center justify-center rounded-sm text-muted-foreground transition-colors",
+          "text-muted-foreground flex size-7 items-center justify-center rounded-sm transition-colors",
           "hover:bg-accent hover:text-foreground",
-          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+          "focus-visible:ring-ring focus-visible:outline-none focus-visible:ring-2",
         )}
       >
         {resolvedTheme === "dark" ? <Sun className="size-4" /> : <Moon className="size-4" />}

@@ -131,11 +131,7 @@ export function formatNumber(
   value: number | null | undefined,
   options: NumberFormatOptions = {},
 ): string {
-  const {
-    placeholder = DEFAULT_PLACEHOLDER,
-    precision = 2,
-    signed = false,
-  } = options;
+  const { placeholder = DEFAULT_PLACEHOLDER, precision = 2, signed = false } = options;
 
   if (!isFiniteNumber(value)) return placeholder;
   const formatter = getNumberFormatter(precision);
@@ -159,11 +155,7 @@ export function formatAbbreviated(
   value: number | null | undefined,
   options: NumberFormatOptions & { prefix?: string } = {},
 ): string {
-  const {
-    placeholder = DEFAULT_PLACEHOLDER,
-    precision = 2,
-    prefix = "",
-  } = options;
+  const { placeholder = DEFAULT_PLACEHOLDER, precision = 2, prefix = "" } = options;
 
   if (!isFiniteNumber(value)) return placeholder;
 

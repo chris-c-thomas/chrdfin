@@ -36,7 +36,7 @@ export function MarketStatusIndicator(): JSX.Element {
         />
         <span className="text-muted-foreground">{STATUS_LABEL[status]}</span>
       </div>
-      <span className="font-mono tabular-nums text-muted-foreground">{etTime} ET</span>
+      <span className="text-muted-foreground font-mono tabular-nums">{etTime} ET</span>
     </div>
   );
 }

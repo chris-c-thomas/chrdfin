@@ -1,10 +1,6 @@
 import { createRouter } from "@tanstack/react-router";
 
-import {
-  RouteErrorBoundary,
-  RouteNotFound,
-  RoutePending,
-} from "./routes/-shared/route-states.js";
+import { RouteErrorBoundary, RouteNotFound, RoutePending } from "./routes/-shared/route-states.js";
 import { routeTree } from "./routeTree.gen.js";
 
 export const router = createRouter({

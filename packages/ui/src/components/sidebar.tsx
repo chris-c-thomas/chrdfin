@@ -86,7 +86,7 @@ export const Sidebar = forwardRef<HTMLDivElement, SidebarProps>(
         ref={ref}
         data-state={open ? "expanded" : "collapsed"}
         className={cn(
-          "flex h-screen flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground transition-[width] duration-150",
+          "border-sidebar-border bg-sidebar text-sidebar-foreground flex h-screen flex-col border-r transition-[width] duration-150",
           open ? "w-60" : "w-12",
           className,
         )}
@@ -104,7 +104,7 @@ export const SidebarHeader = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivEl
     <div
       ref={ref}
       className={cn(
-        "flex h-12 shrink-0 items-center border-b border-sidebar-border px-3",
+        "border-sidebar-border flex h-12 shrink-0 items-center border-b px-3",
         className,
       )}
       {...props}
@@ -128,7 +128,7 @@ export const SidebarFooter = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivEl
   ({ className, ...props }, ref) => (
     <div
       ref={ref}
-      className={cn("shrink-0 border-t border-sidebar-border p-2", className)}
+      className={cn("border-sidebar-border shrink-0 border-t p-2", className)}
       {...props}
     />
   ),
@@ -137,103 +137,89 @@ SidebarFooter.displayName = "SidebarFooter";
 
 export const SidebarGroup = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => (
-    <div
-      ref={ref}
-      className={cn("flex flex-col gap-0.5 px-2 py-2", className)}
-      {...props}
-    />
+    <div ref={ref} className={cn("flex flex-col gap-0.5 px-2 py-2", className)} {...props} />
   ),
 );
 SidebarGroup.displayName = "SidebarGroup";
 
-export const SidebarGroupLabel = forwardRef<
-  HTMLDivElement,
-  HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => {
-  const { open } = useSidebar();
-  if (!open) return null;
-  return (
-    <div
-      ref={ref}
-      className={cn(
-        "px-2 pb-1 pt-0.5 text-xs font-medium uppercase tracking-wider text-muted-foreground",
-        className,
-      )}
-      {...props}
-    />
-  );
-});
+export const SidebarGroupLabel = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
+  ({ className, ...props }, ref) => {
+    const { open } = useSidebar();
+    if (!open) return null;
+    return (
+      <div
+        ref={ref}
+        className={cn(
+          "text-muted-foreground px-2 pb-1 pt-0.5 text-xs font-medium uppercase tracking-wider",
+          className,
+        )}
+        {...props}
+      />
+    );
+  },
+);
 SidebarGroupLabel.displayName = "SidebarGroupLabel";
 
 export const SidebarMenu = forwardRef<HTMLUListElement, HTMLAttributes<HTMLUListElement>>(
   ({ className, ...props }, ref) => (
-    <ul
-      ref={ref}
-      className={cn("flex w-full flex-col gap-0.5", className)}
-      {...props}
-    />
+    <ul ref={ref} className={cn("flex w-full flex-col gap-0.5", className)} {...props} />
   ),
 );
 SidebarMenu.displayName = "SidebarMenu";
 
-export const SidebarMenuItem = forwardRef<
-  HTMLLIElement,
-  HTMLAttributes<HTMLLIElement>
->(({ className, ...props }, ref) => (
-  <li ref={ref} className={cn("relative", className)} {...props} />
-));
+export const SidebarMenuItem = forwardRef<HTMLLIElement, HTMLAttributes<HTMLLIElement>>(
+  ({ className, ...props }, ref) => (
+    <li ref={ref} className={cn("relative", className)} {...props} />
+  ),
+);
 SidebarMenuItem.displayName = "SidebarMenuItem";
 
-export interface SidebarMenuButtonProps
-  extends ButtonHTMLAttributes<HTMLButtonElement> {
+export interface SidebarMenuButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   asChild?: boolean;
   isActive?: boolean;
 }
 
-export const SidebarMenuButton = forwardRef<
-  HTMLButtonElement,
-  SidebarMenuButtonProps
->(({ asChild, isActive, className, ...props }, ref) => {
-  const Comp = asChild ? Slot : "button";
-  return (
-    <Comp
+export const SidebarMenuButton = forwardRef<HTMLButtonElement, SidebarMenuButtonProps>(
+  ({ asChild, isActive, className, ...props }, ref) => {
+    const Comp = asChild ? Slot : "button";
+    return (
+      <Comp
+        ref={ref}
+        data-active={isActive ? "true" : undefined}
+        className={cn(
+          "flex h-8 w-full items-center gap-2 rounded-sm px-2 text-sm transition-colors",
+          "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+          "focus-visible:ring-sidebar-ring focus-visible:outline-none focus-visible:ring-2",
+          "data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-accent-foreground data-[active=true]:font-medium",
+          "data-[active=true]:before:bg-sidebar-primary data-[active=true]:before:absolute data-[active=true]:before:inset-y-0 data-[active=true]:before:left-0 data-[active=true]:before:w-0.5",
+          className,
+        )}
+        {...props}
+      />
+    );
+  },
+);
+SidebarMenuButton.displayName = "SidebarMenuButton";
+
+export interface SidebarMenuLinkProps extends AnchorHTMLAttributes<HTMLAnchorElement> {
+  isActive?: boolean;
+}
+
+export const SidebarMenuLink = forwardRef<HTMLAnchorElement, SidebarMenuLinkProps>(
+  ({ isActive, className, ...props }, ref) => (
+    <a
       ref={ref}
       data-active={isActive ? "true" : undefined}
       className={cn(
         "flex h-8 w-full items-center gap-2 rounded-sm px-2 text-sm transition-colors",
         "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring",
+        "focus-visible:ring-sidebar-ring focus-visible:outline-none focus-visible:ring-2",
         "data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-accent-foreground data-[active=true]:font-medium",
-        "data-[active=true]:before:absolute data-[active=true]:before:inset-y-0 data-[active=true]:before:left-0 data-[active=true]:before:w-0.5 data-[active=true]:before:bg-sidebar-primary",
+        "data-[active=true]:before:bg-sidebar-primary data-[active=true]:before:absolute data-[active=true]:before:inset-y-0 data-[active=true]:before:left-0 data-[active=true]:before:w-0.5",
         className,
       )}
       {...props}
     />
-  );
-});
-SidebarMenuButton.displayName = "SidebarMenuButton";
-
-export interface SidebarMenuLinkProps
-  extends AnchorHTMLAttributes<HTMLAnchorElement> {
-  isActive?: boolean;
-}
-
-export const SidebarMenuLink = forwardRef<
-  HTMLAnchorElement,
-  SidebarMenuLinkProps
->(({ isActive, className, ...props }, ref) => (
-  <a
-    ref={ref}
-    data-active={isActive ? "true" : undefined}
-    className={cn(
-      "flex h-8 w-full items-center gap-2 rounded-sm px-2 text-sm transition-colors",
-      "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring",
-      "data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-accent-foreground data-[active=true]:font-medium",
-      "data-[active=true]:before:absolute data-[active=true]:before:inset-y-0 data-[active=true]:before:left-0 data-[active=true]:before:w-0.5 data-[active=true]:before:bg-sidebar-primary",
-      className,
-    )}
-    {...props}
-  />
-));
+  ),
+);
 SidebarMenuLink.displayName = "SidebarMenuLink";

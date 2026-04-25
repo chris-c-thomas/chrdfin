@@ -40,15 +40,17 @@ export const BacktestSearchSchema = z.object({
     .string()
     .optional()
     .transform((s) =>
-      s ? s.split(",").map(Number).filter((n) => !Number.isNaN(n)) : [],
+      s
+        ? s
+            .split(",")
+            .map(Number)
+            .filter((n) => !Number.isNaN(n))
+        : [],
     )
     .pipe(z.array(z.number().min(0).max(1)).max(50)),
   start: isoDate.optional(),
   end: isoDate.optional(),
-  rebalance: z
-    .enum(["none", "monthly", "quarterly", "annually"])
-    .optional()
-    .default("annually"),
+  rebalance: z.enum(["none", "monthly", "quarterly", "annually"]).optional().default("annually"),
   initial: optionalNumber.pipe(z.number().positive().optional()),
 });
 
@@ -123,10 +125,7 @@ export type ScreenerSearch = z.infer<typeof ScreenerSearchSchema>;
    ============================================================ */
 
 export const NewsSearchSchema = z.object({
-  category: z
-    .enum(["all", "earnings", "macro", "policy", "company"])
-    .optional()
-    .default("all"),
+  category: z.enum(["all", "earnings", "macro", "policy", "company"]).optional().default("all"),
   source: z.string().optional(),
   tickers: tickerList.optional(),
   q: z.string().max(200).optional(),

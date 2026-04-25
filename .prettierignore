@@ -5,3 +5,10 @@ coverage
 pnpm-lock.yaml
 Cargo.lock
 **/routeTree.gen.ts
+
+# Project documentation and skill bundles — managed separately
+.agents/
+.claude/
+docs/
+CLAUDE.md
+README.md
