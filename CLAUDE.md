@@ -179,28 +179,38 @@ apps/desktop        -> all packages
 
 The platform is organized into feature domains, each isolated in its own route module. Domains are gated by feature flags in `@chrdfin/config`. The Dashboard is the home page and sits outside the section taxonomy — it is rendered above all section groups in the sidebar and is always visible.
 
-Sidebar order (top → bottom): **Dashboard → Tracking → Analysis → Tools → Market.** Tracking precedes Analysis intentionally — the day-to-day power-user flow starts at "what do I own and how is it doing?" before reaching for backtesting/MC tooling.
+Sidebar order (top → bottom): **Dashboard → Tracking → Analysis & Tools → Market → Reference.** Tracking precedes Analysis & Tools intentionally — the day-to-day power-user flow starts at "what do I own and how is it doing?" before reaching for backtesting/MC tooling. Reference sits at the bottom because it is read-only documentation rather than active workflow tooling.
 
-| Domain | Route Path | Feature Flag | Status |
-|---|---|---|---|
-| Dashboard | `/` | (always on) | Phase 0 placeholder; widget framework lands in Phase 11 |
-| Portfolio Tracker | `/tracking/portfolio` | `tracker` | Phase 5 |
-| Transactions | `/tracking/transactions` | `tracker` | Phase 5 |
-| Watchlists | `/tracking/watchlist` | `tracker` | Phase 5 |
-| Backtesting | `/analysis/backtest` | `backtest` | Phase 2-3 |
-| Monte Carlo | `/analysis/monte-carlo` | `monteCarlo` | Phase 4 |
-| Optimizer | `/analysis/optimizer` | `optimizer` | Phase 9 (deferred) |
-| Calculators | `/tools/calculators/*` | `calculators` | Phase 6 |
-| Comparison Tool | `/tools/compare` | `backtest` | Phase 10 |
-| Stock Screener | `/market/screener` | `marketData` | Phase 7 |
-| Ticker Detail | `/market/ticker/$symbol` | `marketData` | Phase 7 |
-| Options Chain | `/market/options/$symbol` | `marketData` | Phase 7 |
-| News Feed | `/market/news` | `news` | Phase 8 |
-| Calendar | `/market/calendar` | `news` | Phase 8 |
+The sidebar uses **plural labels** (`Portfolios`, `Watchlists`, `Screeners`, `Calendars`) for the multi-instance domains. Each plural label routes to a list of saved instances with a "Create" action; when more than one instance exists, the sidebar item gains an inline dropdown chevron so the user can jump straight to a saved instance. See `docs/technical-blueprint.md` § Multi-Instance Domains for the full UX evolution.
+
+| Domain | Sidebar label | Route Path | Feature Flag | Status |
+|---|---|---|---|---|
+| Dashboard | `Dashboard` | `/` | (always on) | Phase 0 placeholder; widget framework lands in Phase 11 |
+| Portfolios | `Portfolios` | `/tracking/portfolio` (+ `$id`) | `tracker` | Phase 5 — multiple per user, classified `tracked`/`backtest`/`model`/`watchlist`/`paper` |
+| Transactions | `Transactions` | `/tracking/transactions` | `tracker` | Phase 5 |
+| Watchlists | `Watchlists` | `/tracking/watchlist` (+ `$id`) | `tracker` | Phase 5 — multiple per user |
+| Backtesting | `Backtesting` | `/analysis/backtest` | `backtest` | Phase 2-3 |
+| Monte Carlo | `Monte Carlo` | `/analysis/monte-carlo` | `monteCarlo` | Phase 4 |
+| Optimizer | `Optimizer` | `/analysis/optimizer` | `optimizer` | Phase 9 — mean-variance, efficient frontier, risk parity |
+| Allocation Optimizer | `Allocation Optimizer` | `/analysis/allocation-optimizer` | `allocationOptimizer` | Phase 9 — rebalancing trades, tax-aware; pairs with Optimizer + Backtest |
+| Calculators | `Calculators` | `/tools/calculators/*` | `calculators` | Phase 6 |
+| Comparison Tool | `Compare` | `/tools/compare` | `backtest` | Phase 10 |
+| Screeners | `Screeners` | `/market/screener` (+ `$id`) | `marketData` | Phase 7 — multiple saved screener configs |
+| Ticker Detail | — | `/market/ticker/$symbol` | `marketData` | Phase 7 |
+| Options Chain | — | `/market/options/$symbol` | `marketData` | Phase 7 |
+| News | `News` | `/market/news` | `news` | Phase 8 — multiple saved feed configurations |
+| Calendars | `Calendars` | `/market/calendar` | `news` | Phase 8 — multiple saved calendar configurations |
+| Reference Library | `Stocks` / `Options` / `Retirement Accounts` / `Estate Planning` / `Taxes` / `Guides` | `/reference/*` | `reference` | Phase 12 — bundled curated guides |
+| Personal Research | — | (TBD) | `research` | Deferred; user-curated saved articles + notes (distinct from Reference Library) |
+| Paper Trading *(post-1.0)* | — | (TBD) | `paperTrading` | Post-v1.0 — see Trading Module |
+| Live Trading *(post-1.0)* | — | (TBD) | `liveTrading` | Post-v1.0 — broker integrations |
+| Bot Trading *(post-1.0)* | — | (TBD) | `botTrading` | Post-v1.0 — algorithmic execution |
 
 **Rule:** Domains never import from each other. Cross-domain data flows through Tauri commands and shared types in `@chrdfin/types`. The Dashboard is a strict consumer — its widgets read from existing domain query surfaces but never import from another domain's `routes/` directory.
 
 **Dashboard vision:** the home page will become a customizable widget grid covering markets overview, portfolio summary, recent backtests, accounts, news, and the earnings/economic calendar. Layout, widget selection, and refresh cadence are user-configurable and persisted in DuckDB (`app_settings.dashboard_layout`). See `docs/technical-blueprint.md` § Dashboard Module for the full spec.
+
+**Trading roadmap (post-1.0):** paper trading, live trading via broker integrations, and bot/algorithmic execution are explicitly **planned** for after the main application is stable. They are not in scope for the current phases but the data model, command surface, and UI shell are designed to accommodate them. See `docs/technical-blueprint.md` § Trading Module for the architecture targets.
 
 ---
 
@@ -413,7 +423,7 @@ Start with Tiingo free tier during development. Tiingo Power ($10/mo) for produc
 - Do NOT use default exports. Use named exports everywhere.
 - Do NOT add CSS files. Use Tailwind utility classes only.
 - Do NOT use `@backtest/*` as a package scope. The correct scope is `@chrdfin/*`.
-- Do NOT implement broker integrations, live trading, or order execution.
+- Do NOT implement broker integrations, live trading, paper trading, or bot/algorithmic execution **during the current development phases** (0 through 12). These capabilities are explicitly part of the long-term roadmap (post-v1.0) and the data model, command surface, and UI shell are designed to accommodate them — but writing any actual trading code, broker adapter, or order-routing logic before v1.0 is shipped and stable is out of scope. See `docs/technical-blueprint.md` § Trading Module for the architecture targets.
 - Do NOT store API keys in the database or in plaintext files. Use environment variables (dev) or OS keychain (prod).
 - Do NOT use Next.js, server components, API routes, or any server-side rendering patterns. This is a Tauri SPA.
 - Do NOT use Drizzle ORM, PostgreSQL, Neon, or any external database. DuckDB is the database.

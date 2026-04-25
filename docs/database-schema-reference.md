@@ -122,14 +122,22 @@ CREATE TABLE IF NOT EXISTS portfolios (
     name            VARCHAR NOT NULL,
     description     VARCHAR,
     portfolio_type  VARCHAR(20) NOT NULL DEFAULT 'backtest',
-                    -- 'backtest' | 'tracked' | 'model' | 'watchlist'
+                    -- 'backtest' | 'tracked' | 'model' | 'watchlist' | 'paper'
     config          JSON NOT NULL,       -- allocations, strategy, rebalancing rules
     created_at      TIMESTAMPTZ DEFAULT current_timestamp,
     updated_at      TIMESTAMPTZ DEFAULT current_timestamp
 );
 ```
 
-> **Note:** No `user_id` column. This is a single-user desktop application.
+> **Note:** No `user_id` column. This is a single-user desktop application. Each user creates as many portfolios as they want and they are categorized via `portfolio_type`:
+>
+> - `tracked` — real holdings the user owns (the "real money" book)
+> - `backtest` — historical/test portfolios used by the Backtest engine
+> - `model` — target allocation models the user designs but does not (yet) own
+> - `watchlist` — named ticker lists with no holdings (rendered via the separate `watchlists` table; this enum value is reserved for portfolio rows that act as a watchlist container)
+> - `paper` — paper-trading portfolios simulating live trades against real prices; reserved for the post-v1.0 Trading roadmap
+>
+> The column is `VARCHAR` (no `CHECK` constraint), so additional types can be appended without a migration as the Trading Module rolls out.
 
 ### Table: `simulation_results`
 

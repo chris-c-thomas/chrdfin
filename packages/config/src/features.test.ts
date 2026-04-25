@@ -6,11 +6,16 @@ describe("isFeatureEnabled", () => {
   it("returns true for enabled flags", () => {
     expect(isFeatureEnabled("backtest")).toBe(true);
     expect(isFeatureEnabled("tracker")).toBe(true);
+    expect(isFeatureEnabled("optimizer")).toBe(true);
+    expect(isFeatureEnabled("allocationOptimizer")).toBe(true);
+    expect(isFeatureEnabled("reference")).toBe(true);
   });
 
-  it("returns false for disabled flags", () => {
-    expect(isFeatureEnabled("optimizer")).toBe(false);
+  it("returns false for deferred / future flags", () => {
     expect(isFeatureEnabled("research")).toBe(false);
+    expect(isFeatureEnabled("paperTrading")).toBe(false);
+    expect(isFeatureEnabled("liveTrading")).toBe(false);
+    expect(isFeatureEnabled("botTrading")).toBe(false);
   });
 
   it("FEATURES is a complete map of known domains", () => {
@@ -19,10 +24,15 @@ describe("isFeatureEnabled", () => {
       "monteCarlo",
       "tracker",
       "optimizer",
+      "allocationOptimizer",
       "calculators",
       "marketData",
       "news",
       "research",
+      "reference",
+      "paperTrading",
+      "liveTrading",
+      "botTrading",
     ];
     expect(Object.keys(FEATURES).sort()).toEqual(expected.sort());
   });

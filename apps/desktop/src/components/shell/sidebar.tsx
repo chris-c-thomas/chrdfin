@@ -15,18 +15,25 @@ import {
 import { Link, useLocation } from "@tanstack/react-router";
 import {
   Activity,
+  BarChart2,
+  BookOpen,
   Briefcase,
   Calculator,
   Calendar,
   ChevronLeft,
+  FileText,
   GitCompare,
   Layers,
   LayoutDashboard,
   LineChart,
   List,
   Newspaper,
+  PiggyBank,
+  Receipt,
+  Scale,
   Sigma,
   Star,
+  TrendingUp,
   type LucideIcon,
 } from "lucide-react";
 import { type JSX } from "react";
@@ -44,30 +51,34 @@ interface NavSection {
 }
 
 /**
- * Section order: Tracking precedes Analysis intentionally — the day-to-day
- * power-user flow starts at "what do I own and how is it doing?" before
- * reaching for backtesting/MC tooling.
+ * Section order: Tracking → Analysis & Tools → Market → Reference.
+ *
+ * Plural labels (`Portfolios`, `Watchlists`, `Screeners`, `Calendars`) signal
+ * that each domain supports multiple saved instances per user. The list/detail
+ * UX and per-instance dropdowns are deferred to the respective phases — see
+ * `docs/technical-blueprint.md` § Multi-instance domains.
  */
 const SECTIONS: NavSection[] = [
   {
     label: "Tracking",
     items: [
-      { label: "Portfolio", to: "/tracking/portfolio", icon: Briefcase, flag: "tracker" },
+      { label: "Portfolios", to: "/tracking/portfolio", icon: Briefcase, flag: "tracker" },
       { label: "Transactions", to: "/tracking/transactions", icon: List, flag: "tracker" },
-      { label: "Watchlist", to: "/tracking/watchlist", icon: Star, flag: "tracker" },
+      { label: "Watchlists", to: "/tracking/watchlist", icon: Star, flag: "tracker" },
     ],
   },
   {
-    label: "Analysis",
+    label: "Analysis & Tools",
     items: [
       { label: "Backtesting", to: "/analysis/backtest", icon: LineChart, flag: "backtest" },
       { label: "Monte Carlo", to: "/analysis/monte-carlo", icon: Sigma, flag: "monteCarlo" },
       { label: "Optimizer", to: "/analysis/optimizer", icon: Activity, flag: "optimizer" },
-    ],
-  },
-  {
-    label: "Tools",
-    items: [
+      {
+        label: "Allocation Optimizer",
+        to: "/analysis/allocation-optimizer",
+        icon: Scale,
+        flag: "allocationOptimizer",
+      },
       { label: "Calculators", to: "/tools/calculators", icon: Calculator, flag: "calculators" },
       { label: "Compare", to: "/tools/compare", icon: GitCompare, flag: "backtest" },
     ],
@@ -75,9 +86,30 @@ const SECTIONS: NavSection[] = [
   {
     label: "Market",
     items: [
-      { label: "Screener", to: "/market/screener", icon: Layers, flag: "marketData" },
+      { label: "Screeners", to: "/market/screener", icon: Layers, flag: "marketData" },
       { label: "News", to: "/market/news", icon: Newspaper, flag: "news" },
-      { label: "Calendar", to: "/market/calendar", icon: Calendar, flag: "news" },
+      { label: "Calendars", to: "/market/calendar", icon: Calendar, flag: "news" },
+    ],
+  },
+  {
+    label: "Reference",
+    items: [
+      { label: "Stocks", to: "/reference/stocks", icon: TrendingUp, flag: "reference" },
+      { label: "Options", to: "/reference/options", icon: BarChart2, flag: "reference" },
+      {
+        label: "Retirement Accounts",
+        to: "/reference/retirement",
+        icon: PiggyBank,
+        flag: "reference",
+      },
+      {
+        label: "Estate Planning",
+        to: "/reference/estate",
+        icon: FileText,
+        flag: "reference",
+      },
+      { label: "Taxes", to: "/reference/taxes", icon: Receipt, flag: "reference" },
+      { label: "Guides", to: "/reference", icon: BookOpen, flag: "reference" },
     ],
   },
 ];
@@ -96,9 +128,9 @@ export function AppSidebar(): JSX.Element {
       </SidebarHeader>
       <SidebarContent>
         {/*
-         * Dashboard is rendered above the section groups as a top-level
-         * entry point. It is always visible (no feature flag) and uses
-         * an exact pathname match so it is only highlighted on `/`.
+         * Dashboard is rendered above the section groups as a top-level entry
+         * point. Always visible (no feature flag) and uses an exact pathname
+         * match so it is only highlighted on `/`.
          */}
         <SidebarGroup>
           <SidebarMenu>
@@ -122,7 +154,10 @@ export function AppSidebar(): JSX.Element {
               <SidebarMenu>
                 {visible.map((item) => {
                   const Icon = item.icon;
-                  const isActive = location.pathname.startsWith(item.to);
+                  const isActive =
+                    item.to === "/reference"
+                      ? location.pathname === "/reference"
+                      : location.pathname.startsWith(item.to);
                   return (
                     <SidebarMenuItem key={item.to}>
                       <SidebarMenuButton asChild isActive={isActive}>

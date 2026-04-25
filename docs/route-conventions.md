@@ -83,64 +83,92 @@ The complete Phase 0 route tree. Every file listed below is created in Phase 0 w
 
 ```
 apps/desktop/src/routes/
-├── __root.tsx                        # Platform shell, root error boundary
-├── index.tsx                         # / → Dashboard (home screen; widget grid lands in Phase 11)
+├── __root.tsx                            # Platform shell, root error boundary
+├── index.tsx                             # / → Dashboard (home screen; widget grid lands in Phase 11)
 │
-├── tracking/                         # Listed first — sidebar order is Tracking → Analysis → Tools → Market.
+├── tracking/                             # Sidebar order: Tracking → Analysis & Tools → Market → Reference.
 │   ├── route.tsx
-│   ├── index.tsx                     # /tracking → /tracking/portfolio
-│   ├── portfolio.tsx                 # /tracking/portfolio (search: portfolioId)
+│   ├── index.tsx                         # /tracking → /tracking/portfolio
+│   ├── portfolio.tsx                     # /tracking/portfolio — list of saved portfolios (Portfolios)
 │   ├── portfolio.lazy.tsx
-│   ├── transactions.tsx              # /tracking/transactions
+│   ├── portfolio.$id.tsx                 # /tracking/portfolio/$id — detail of one portfolio (Phase 5)
+│   ├── transactions.tsx                  # /tracking/transactions
 │   ├── transactions.lazy.tsx
-│   ├── watchlist.tsx                 # /tracking/watchlist
-│   └── watchlist.lazy.tsx
+│   ├── watchlist.tsx                     # /tracking/watchlist — list of saved watchlists (Watchlists)
+│   ├── watchlist.lazy.tsx
+│   └── watchlist.$id.tsx                 # /tracking/watchlist/$id — detail of one watchlist (Phase 5)
 │
-├── analysis/
-│   ├── route.tsx                     # /analysis layout + section error boundary
-│   ├── index.tsx                     # /analysis → redirects to /analysis/backtest
-│   ├── backtest.tsx                  # /analysis/backtest (search params)
-│   ├── backtest.lazy.tsx             # Lazy chunk for backtest component
-│   ├── monte-carlo.tsx               # /analysis/monte-carlo (search params)
+├── analysis/                             # The sidebar combines /analysis and /tools under "Analysis & Tools".
+│   ├── route.tsx                         # /analysis layout + section error boundary
+│   ├── index.tsx                         # /analysis → redirects to /analysis/backtest
+│   ├── backtest.tsx                      # /analysis/backtest (search params)
+│   ├── backtest.lazy.tsx
+│   ├── monte-carlo.tsx                   # /analysis/monte-carlo
 │   ├── monte-carlo.lazy.tsx
-│   ├── optimizer.tsx                 # /analysis/optimizer (Phase 9, gated)
-│   └── optimizer.lazy.tsx
+│   ├── optimizer.tsx                     # /analysis/optimizer (Phase 9)
+│   ├── optimizer.lazy.tsx
+│   ├── allocation-optimizer.tsx          # /analysis/allocation-optimizer (Phase 9)
+│   └── allocation-optimizer.lazy.tsx
 │
-├── tools/
+├── tools/                                # URL-grouped under /tools but sidebar-grouped under "Analysis & Tools".
 │   ├── route.tsx
-│   ├── index.tsx                     # /tools → /tools/calculators
+│   ├── index.tsx                         # /tools → /tools/calculators
 │   ├── calculators/
 │   │   ├── route.tsx
-│   │   ├── index.tsx                 # /tools/calculators (calculator picker)
-│   │   ├── compound-interest.tsx     # /tools/calculators/compound-interest
+│   │   ├── index.tsx                     # /tools/calculators (calculator picker)
+│   │   ├── compound-interest.tsx         # /tools/calculators/compound-interest
 │   │   ├── compound-interest.lazy.tsx
 │   │   ├── retirement.tsx
 │   │   ├── retirement.lazy.tsx
 │   │   ├── savings-rate.tsx
 │   │   └── savings-rate.lazy.tsx
-│   ├── compare.tsx                   # /tools/compare
+│   ├── compare.tsx                       # /tools/compare
 │   └── compare.lazy.tsx
 │
 ├── market/
 │   ├── route.tsx
-│   ├── index.tsx                     # /market → /market/screener
-│   ├── screener.tsx                  # /market/screener (search: filters)
+│   ├── index.tsx                         # /market → /market/screener
+│   ├── screener.tsx                      # /market/screener — list of saved screeners (Screeners)
 │   ├── screener.lazy.tsx
+│   ├── screener.$id.tsx                  # /market/screener/$id — saved screener detail (Phase 7)
 │   ├── ticker/
-│   │   ├── $symbol.tsx               # /market/ticker/$symbol
+│   │   ├── $symbol.tsx                   # /market/ticker/$symbol
 │   │   └── $symbol.lazy.tsx
 │   ├── options/
-│   │   ├── $symbol.tsx               # /market/options/$symbol
+│   │   ├── $symbol.tsx                   # /market/options/$symbol
 │   │   └── $symbol.lazy.tsx
-│   ├── news.tsx                      # /market/news (search: category, source)
+│   ├── news.tsx                          # /market/news — multiple saved feed configurations
 │   ├── news.lazy.tsx
-│   ├── calendar.tsx                  # /market/calendar (search: date range)
+│   ├── calendar.tsx                      # /market/calendar — multiple saved calendar configurations (Calendars)
 │   └── calendar.lazy.tsx
 │
-└── -shared/                          # Ignored by router (prefix "-")
-    ├── route-states.tsx              # PendingComponent, ErrorComponent
-    └── feature-gate.tsx              # <FeatureGate /> wrapper
+├── reference/                            # Bundled curated knowledge base (Phase 12).
+│   ├── route.tsx                         # /reference layout + section error boundary
+│   ├── index.tsx                         # /reference — section landing
+│   ├── stocks.tsx                        # /reference/stocks
+│   ├── options.tsx                       # /reference/options
+│   ├── retirement.tsx                    # /reference/retirement
+│   ├── estate.tsx                        # /reference/estate
+│   └── taxes.tsx                         # /reference/taxes
+│
+└── -shared/                              # Ignored by router (prefix "-")
+    ├── route-states.tsx                  # PendingComponent, ErrorComponent
+    └── feature-gate.tsx                  # <FeatureGate /> wrapper
 ```
+
+### Multi-instance routing
+
+`Portfolios`, `Watchlists`, `Screeners`, and `Calendars` (the plural sidebar items) follow a list/detail convention:
+
+- **List route** at `/<section>/<resource>` (e.g. `/tracking/portfolio`) renders the list of saved instances with a "Create" action.
+- **Detail route** at `/<section>/<resource>/$id` renders one instance.
+- The sidebar item points at the list route. When the user has more than one saved instance, the sidebar item gains an inline dropdown listing each instance — clicking the parent label still navigates to the list, clicking a child navigates to the detail route. See `docs/technical-blueprint.md` § Multi-Instance Domains.
+
+The `News` and `Calendars` items use saved-configuration tables (added when the domains ship in Phases 7-8) rather than per-instance routes, but follow the same dropdown UX.
+
+### URL grouping vs sidebar grouping
+
+The sidebar combines the `/analysis/*` and `/tools/*` URL prefixes under a single "Analysis & Tools" section heading. This is intentional — URL structure reflects code organization (separate route directories, separate Tauri command modules), while sidebar grouping reflects the user's mental model. **Don't move existing routes between `/analysis/` and `/tools/` to match the sidebar grouping** — that would break bookmarked URLs and shared deep-links.
 
 ### File naming conventions
 

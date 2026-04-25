@@ -459,19 +459,21 @@ Implemented in `apps/desktop/src/components/shell/sidebar.tsx`. Built on shadcn/
 - **Background:** `bg-sidebar` (matches `--card` in light, `--background` in dark for visual integration with the title bar).
 - **Logo block:** 56px tall (matches the top header for a clean horizontal divider line). "CHRD" wordmark in Plex Mono, weight 600, when collapsed; "chrdfin" lowercase in Plex Sans when expanded.
 - **Top-level Dashboard item:** rendered above the section groups as an ungrouped, always-visible entry point. Routes to `/`. Uses an exact pathname match for the active state so it is highlighted only on the home view, not on any nested route.
-- **Sections:** four groups below Dashboard with subtle dividers (`border-sidebar-border`). When collapsed, dividers persist but section titles are hidden. Section order is intentional — `Tracking` precedes `Analysis` because the day-to-day power-user flow starts at "what do I own and how is it doing?" before reaching for backtesting/MC tooling.
+- **Sections:** four groups below Dashboard with subtle dividers (`border-sidebar-border`). When collapsed, dividers persist but section titles are hidden. Section order is intentional — `Tracking` precedes `Analysis & Tools` because the day-to-day power-user flow starts at "what do I own and how is it doing?" before reaching for backtesting/MC tooling. `Reference` sits at the bottom because it is read-only documentation rather than active workflow tooling.
+- **Plural labels:** `Portfolios`, `Watchlists`, `Screeners`, `Calendars` — these are multi-instance domains. Each label routes to a list page of the user's saved instances, with a primary "Create" action and links to detail views. When a user has more than one saved instance, the sidebar item gains a dropdown chevron that expands inline to show the saved instances; clicking the parent label still navigates to the list page, clicking an expanded child navigates straight to that instance. See `docs/technical-blueprint.md` § Multi-Instance Domains for the full spec.
 
 | Position | Items |
 |---|---|
 | **Dashboard** (top-level, ungrouped) | Dashboard |
-| **Tracking** | Portfolio, Transactions, Watchlist |
-| **Analysis** | Backtesting, Monte Carlo, Optimizer |
-| **Tools** | Calculators, Compare |
-| **Market** | Screener, News, Calendar |
+| **Tracking** | Portfolios, Transactions, Watchlists |
+| **Analysis & Tools** | Backtesting, Monte Carlo, Optimizer, Allocation Optimizer, Calculators, Compare |
+| **Market** | Screeners, News, Calendars |
+| **Reference** | Stocks, Options, Retirement Accounts, Estate Planning, Taxes, Guides |
 
 - **Nav item:** 32px height, icon (16px Lucide) + label. Active state is a 2px left border accent in `--primary` plus a subtle `bg-sidebar-accent` fill (5% blue tint). Hover state is `bg-sidebar-accent` only.
 - **Feature flags:** Items whose feature flag in `@chrdfin/config` is `false` are not rendered. This is checked at component render time, not at route definition time, so toggling a flag in config and HMR-reloading immediately reflects in the sidebar.
 - **Collapse toggle:** Bottom of sidebar, 32px button with chevron icon. Keyboard shortcut `Cmd/Ctrl+B`.
+- **Density:** with all 18 nav items + 4 section labels + Dashboard expanded, the sidebar can exceed window height on shorter displays. The `<SidebarContent>` is `overflow-y-auto` by design; thin scrollbars per the global rules.
 
 ### Header (Top)
 
