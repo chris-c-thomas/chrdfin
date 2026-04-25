@@ -174,12 +174,18 @@
     font-variant-numeric: tabular-nums;
   }
 
-  html,
+  /*
+   * No `html { font-size }` override. The webview inherits the
+   * platform/user-agent default (16px in Tauri's webview, but respects
+   * user-set browser scaling and OS accessibility settings). Every
+   * Tailwind rem-based utility (text-*, gap-*, p-*, h-*) resolves
+   * against that root, so the app honors the user's preferences.
+   */
+
   body {
     background-color: var(--background);
     color: var(--foreground);
     font-family: var(--font-sans);
-    font-size: 13px;
     line-height: 1.4;
     -webkit-font-smoothing: antialiased;
   }

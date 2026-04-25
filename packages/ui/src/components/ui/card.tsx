@@ -22,7 +22,7 @@ CardHeader.displayName = "CardHeader";
 
 export const CardTitle = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => (
-    <div ref={ref} className={cn("text-md font-medium leading-tight", className)} {...props} />
+    <div ref={ref} className={cn("text-lg font-medium leading-tight", className)} {...props} />
   ),
 );
 CardTitle.displayName = "CardTitle";

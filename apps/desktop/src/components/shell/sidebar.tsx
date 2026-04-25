@@ -83,7 +83,7 @@ export function AppSidebar(): JSX.Element {
   return (
     <Sidebar>
       <SidebarHeader>
-        <span className={cn("font-mono font-semibold", open ? "text-md" : "text-sm")}>
+        <span className={cn("font-mono font-semibold", open ? "text-base" : "text-sm")}>
           {open ? "chrdfin" : "CHRD"}
         </span>
       </SidebarHeader>

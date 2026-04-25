@@ -104,7 +104,7 @@ export const SidebarHeader = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivEl
     <div
       ref={ref}
       className={cn(
-        "border-sidebar-border flex h-12 shrink-0 items-center border-b px-3",
+        "border-sidebar-border flex h-14 shrink-0 items-center border-b px-3",
         className,
       )}
       {...props}

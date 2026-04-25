@@ -50,7 +50,7 @@ export function AppHeader({ onOpenCommandPalette }: AppHeaderProps): JSX.Element
   const { resolvedTheme, setTheme } = useTheme();
 
   return (
-    <header className="border-border bg-background flex h-10 shrink-0 items-center gap-4 border-b px-4">
+    <header className="border-border bg-background flex h-14 shrink-0 items-center gap-4 border-b px-4">
       <Breadcrumb className="flex-1">
         <BreadcrumbList>
           {segments.map((segment, i) => {

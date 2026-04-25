@@ -12,7 +12,7 @@ export function RoutePending(): JSX.Element {
 export function RouteErrorBoundary({ error, reset }: ErrorComponentProps): JSX.Element {
   return (
     <div className="flex h-full flex-col items-center justify-center gap-3 p-6">
-      <div className="text-md text-destructive font-medium">Something went wrong</div>
+      <div className="text-lg text-destructive font-medium">Something went wrong</div>
       <pre className="text-muted-foreground max-w-2xl whitespace-pre-wrap font-mono text-xs">
         {error instanceof Error ? error.message : String(error)}
       </pre>
@@ -35,7 +35,7 @@ export function RouteErrorBoundary({ error, reset }: ErrorComponentProps): JSX.E
 export function SectionErrorBoundary({ error, reset }: ErrorComponentProps): JSX.Element {
   return (
     <div className="flex h-full flex-col items-center justify-center gap-3 p-6">
-      <div className="text-md text-destructive font-medium">Section unavailable</div>
+      <div className="text-lg text-destructive font-medium">Section unavailable</div>
       <pre className="text-muted-foreground max-w-2xl whitespace-pre-wrap font-mono text-xs">
         {error instanceof Error ? error.message : String(error)}
       </pre>
@@ -53,7 +53,7 @@ export function SectionErrorBoundary({ error, reset }: ErrorComponentProps): JSX
 export function RouteNotFound(): JSX.Element {
   return (
     <div className="flex h-full flex-col items-center justify-center gap-3 p-6">
-      <div className="text-md font-medium">Route not found</div>
+      <div className="text-lg font-medium">Route not found</div>
       <Link to="/" className="border-border hover:bg-accent border px-3 py-1 text-xs">
         Home
       </Link>
@@ -74,7 +74,7 @@ export function PhasePlaceholder({
 }: PhasePlaceholderProps): JSX.Element {
   return (
     <div className="flex h-full flex-col items-center justify-center gap-2 p-6 text-center">
-      <div className="text-md font-medium">{feature}</div>
+      <div className="text-lg font-medium">{feature}</div>
       {description && <div className="text-muted-foreground max-w-md text-xs">{description}</div>}
       <div className="text-muted-foreground text-xs">Coming in Phase {phase}.</div>
     </div>
