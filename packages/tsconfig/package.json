@@ -3,6 +3,21 @@
   "version": "0.0.0",
   "private": true,
   "license": "MIT",
+  "description": "Shared TypeScript configurations for chrdfin (base, library, react-library, react-app). Internal workspace package — not published.",
+  "author": {
+    "name": "Chris Thomas",
+    "email": "chris.c.thomas@icloud.com",
+    "url": "https://github.com/chris-c-thomas"
+  },
+  "homepage": "https://github.com/chris-c-thomas/chrdfin#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chris-c-thomas/chrdfin.git",
+    "directory": "packages/tsconfig"
+  },
+  "bugs": {
+    "url": "https://github.com/chris-c-thomas/chrdfin/issues"
+  },
   "files": [
     "*.json"
   ]

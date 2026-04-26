@@ -3,6 +3,21 @@
   "version": "0.0.0",
   "private": true,
   "license": "MIT",
+  "description": "Shared ESLint flat config for chrdfin (base + react). Internal workspace package — not published.",
+  "author": {
+    "name": "Chris Thomas",
+    "email": "chris.c.thomas@icloud.com",
+    "url": "https://github.com/chris-c-thomas"
+  },
+  "homepage": "https://github.com/chris-c-thomas/chrdfin#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chris-c-thomas/chrdfin.git",
+    "directory": "packages/eslint-config"
+  },
+  "bugs": {
+    "url": "https://github.com/chris-c-thomas/chrdfin/issues"
+  },
   "type": "module",
   "main": "./base.js",
   "exports": {

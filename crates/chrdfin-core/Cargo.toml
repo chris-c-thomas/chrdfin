@@ -1,10 +1,17 @@
 [package]
 name = "chrdfin-core"
-version = "0.1.0"
+version = "0.0.1"
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
-description = "Native computation engine for chrdfin: backtest, Monte Carlo, optimization, statistics, calculators."
+authors.workspace = true
+homepage.workspace = true
+repository.workspace = true
+keywords.workspace = true
+description = "Native computation engine for chrdfin: backtest, Monte Carlo, optimization, statistics, financial calculators. Powered by Rayon for data parallelism."
+categories = ["finance", "mathematics", "science"]
+readme = "../../README.md"
+publish = false
 
 [lib]
 name = "chrdfin_core"

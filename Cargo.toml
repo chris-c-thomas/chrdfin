@@ -9,6 +9,11 @@ resolver = "3"
 edition = "2024"
 rust-version = "1.95"
 license = "MIT"
+authors = ["Chris Thomas <chris.c.thomas@icloud.com>"]
+homepage = "https://github.com/chris-c-thomas/chrdfin"
+repository = "https://github.com/chris-c-thomas/chrdfin"
+readme = "README.md"
+keywords = ["finance", "portfolio", "backtest", "monte-carlo", "tauri"]
 
 [workspace.dependencies]
 serde = { version = "1", features = ["derive"] }

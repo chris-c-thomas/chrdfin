@@ -1,6 +1,29 @@
 {
   "name": "chrdfin",
+  "version": "0.0.1",
   "private": true,
+  "license": "MIT",
+  "description": "A personal financial intelligence desktop application: multi-instance portfolio tracking, backtesting, Monte Carlo simulation, optimization, calculators, market data, news, calendars, and a bundled reference library. Built with Tauri v2, React 19, and embedded DuckDB.",
+  "author": {
+    "name": "Chris Thomas",
+    "email": "chris.c.thomas@icloud.com",
+    "url": "https://github.com/chris-c-thomas"
+  },
+  "homepage": "https://github.com/chris-c-thomas/chrdfin#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chris-c-thomas/chrdfin.git"
+  },
+  "bugs": {
+    "url": "https://github.com/chris-c-thomas/chrdfin/issues"
+  },
+  "keywords": [
+    "finance",
+    "portfolio",
+    "backtest",
+    "monte-carlo",
+    "tauri"
+  ],
   "packageManager": "pnpm@10.33.0",
   "engines": {
     "node": ">=22.0.0"

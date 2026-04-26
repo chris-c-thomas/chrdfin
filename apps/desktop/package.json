@@ -1,8 +1,24 @@
 {
   "name": "desktop",
-  "version": "0.1.0",
+  "version": "0.0.1",
   "private": true,
+  "license": "MIT",
   "type": "module",
+  "description": "chrdfin desktop application — Tauri v2 frontend (Vite + React 19) and the bridge between the Rust backend and the user.",
+  "author": {
+    "name": "Chris Thomas",
+    "email": "chris.c.thomas@icloud.com",
+    "url": "https://github.com/chris-c-thomas"
+  },
+  "homepage": "https://github.com/chris-c-thomas/chrdfin#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chris-c-thomas/chrdfin.git",
+    "directory": "apps/desktop"
+  },
+  "bugs": {
+    "url": "https://github.com/chris-c-thomas/chrdfin/issues"
+  },
   "scripts": {
     "dev": "vite",
     "build": "vite build",

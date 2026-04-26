@@ -4,7 +4,7 @@
 
 ---
 
-**Version 3.0** | April 2026 | *Classification: Internal / Development*
+**Version 3.0** | April 2026 | *Status: Pre-1.0 development*
 
 | | |
 |---|---|

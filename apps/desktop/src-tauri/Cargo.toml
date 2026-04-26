@@ -1,10 +1,17 @@
 [package]
 name = "chrdfin-desktop"
-version = "0.1.0"
+version = "0.0.1"
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
-description = "chrdfin desktop application — Tauri v2 backend."
+authors.workspace = true
+homepage.workspace = true
+repository.workspace = true
+keywords.workspace = true
+description = "chrdfin desktop application — Tauri v2 backend with embedded DuckDB and the chrdfin-core computation engine."
+categories = ["gui", "finance"]
+readme = "../../../README.md"
+publish = false
 
 [lib]
 name = "chrdfin_desktop_lib"

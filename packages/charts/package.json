@@ -3,6 +3,21 @@
   "version": "0.0.0",
   "private": true,
   "license": "MIT",
+  "description": "Chart wrapper components and theme integration for chrdfin (Recharts + Lightweight Charts). Internal workspace package — not published.",
+  "author": {
+    "name": "Chris Thomas",
+    "email": "chris.c.thomas@icloud.com",
+    "url": "https://github.com/chris-c-thomas"
+  },
+  "homepage": "https://github.com/chris-c-thomas/chrdfin#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chris-c-thomas/chrdfin.git",
+    "directory": "packages/charts"
+  },
+  "bugs": {
+    "url": "https://github.com/chris-c-thomas/chrdfin/issues"
+  },
   "type": "module",
   "main": "./src/index.ts",
   "types": "./src/index.ts",
