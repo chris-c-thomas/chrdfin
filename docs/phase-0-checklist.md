@@ -20,7 +20,7 @@ Create the root `chrdfin/` directory with pnpm workspaces and Turborepo.
   "private": true,
   "packageManager": "pnpm@9.15.4",
   "engines": {
-    "node": ">=22.0.0"
+    "node": ">=24.0.0"
   },
   "scripts": {
     "dev": "turbo run dev",

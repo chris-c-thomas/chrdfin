@@ -132,7 +132,7 @@ chrdfin/
 
 | Technology | Version | Notes |
 |---|---|---|
-| Node.js | >= 22.x LTS | Required for Turborepo, Vite |
+| Node.js | >= 24.x LTS | Required for Turborepo, Vite |
 | pnpm | >= 9.x | Workspace protocol |
 | Turborepo | >= 2.4 | Incremental builds, caching |
 | Tauri | 2.x | Desktop application framework |

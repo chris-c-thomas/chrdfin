@@ -429,7 +429,7 @@ apps/desktop        -> @chrdfin/types, @chrdfin/ui, @chrdfin/charts, @chrdfin/co
 
 | Package | Version | Notes |
 |---|---|---|
-| Node.js | >= 22.x LTS | Required for native fetch, Turborepo |
+| Node.js | >= 24.x LTS | Required for native fetch, Turborepo |
 | pnpm | >= 9.x | Workspace protocol, catalogs support |
 | Turborepo | >= 2.4 | Latest stable |
 | React | 19.2.x | View Transitions, useEffectEvent, Activity, React Compiler (stable) |
