@@ -325,6 +325,7 @@ cargo fmt --check               # Format check
 - Scope commits to domains: `feat(tracker): add transaction entry form`.
 - One logical change per commit.
 - All PRs must pass CI (typecheck, lint, test, cargo check, cargo test).
+- **Git posture:** the user runs `git commit` / `push` / `tag` / `gh pr create` themselves. Claude prepares (write code, `git add`, draft message), reports, then stops. When the user explicitly asks Claude to commit/push/tag, use `git commit -S` (signed) and `git tag -s` (signed annotated) — never lightweight tags, never `--no-gpg-sign`. No `Co-Authored-By:` trailers.
 
 ---
 
@@ -449,3 +450,13 @@ Start with Tiingo free tier during development. Tiingo Power ($10/mo) for produc
 - **Shared library tsconfigs must not declare `rootDir`** — it resolves relative to the file declaring it, breaking every consuming package. Per-package tsconfigs override if needed.
 - **Tauri icons:** `pnpm exec tauri icon <source.png>` (run from `apps/desktop`) generates the full icon set from a single 1024×1024 source PNG.
 - **Cargo workspace `resolver = "3"`** is required for edition 2024 (already locked in `Cargo.toml`).
+- **Tauri `[lib].crate-type` is `["cdylib", "rlib"]` only** — never re-add `staticlib`. It produces a multi-hundred-MB archive that exhausts CI runner disk and isn't consumed anywhere.
+- **`Icon?` rule in `.gitignore` matches `icons/` case-insensitively on APFS** — the macOS legacy desktop-icon pattern hides the Tauri icon set on default-config Macs. The `!apps/desktop/src-tauri/icons/**` force-include at the bottom of `.gitignore` is load-bearing; don't remove it.
+- **`pnpm/action-setup@v4` + `packageManager` field:** never pass `with: { version: ... }` — the action reads the exact version from `package.json` `packageManager` and errors with `ERR_PNPM_BAD_PM_VERSION` when both are set.
+- **CI debugging:** use `gh run list --limit 5` and `gh run view <id> --log-failed` to pull failed-step logs straight to the terminal instead of clicking through the GitHub web UI.
+
+---
+
+## Releases & Versioning
+
+Pre-1.0, the minor version tracks the development phase: `v0.N.0` = Phase N completion, `v0.N.M` = patch within Phase N. `v0.0.0` is invalid SemVer; Phase 0 ships as `v0.0.1`. Releases are tag-driven (no auto-release on push to main). Full policy in `.claude/instructions/changelog-and-releases.md`.
