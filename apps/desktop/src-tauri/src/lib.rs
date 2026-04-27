@@ -7,6 +7,7 @@ mod error;
 pub mod http;
 pub mod secrets;
 mod state;
+pub mod storage;
 pub mod sync;
 
 use tauri::Manager;

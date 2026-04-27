@@ -112,3 +112,47 @@ pub enum MacroSeriesId {
     CpiYoy,
     UnemploymentRate,
 }
+
+impl MacroSeriesId {
+    /// Stable string form used as the value of `macro_series.series_id` in
+    /// DuckDB. Routes through serde so the on-disk form never drifts from
+    /// what `Deserialize` accepts on the way back in.
+    pub fn as_db_str(&self) -> String {
+        // Unit-variant unit serialization is infallible; both unwraps are
+        // structural, not data-dependent.
+        serde_json::to_value(self)
+            .expect("MacroSeriesId serialize")
+            .as_str()
+            .expect("MacroSeriesId serializes to a string")
+            .to_string()
+    }
+
+    /// Inverse of `as_db_str`. Returns `None` for unknown strings (e.g. an
+    /// older DB row from a now-removed series).
+    pub fn from_db_str(s: &str) -> Option<Self> {
+        serde_json::from_value(serde_json::Value::String(s.to_string())).ok()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn macro_series_id_round_trips_through_db_str() {
+        for series in [
+            MacroSeriesId::Treasury3Mo,
+            MacroSeriesId::Treasury10Y,
+            MacroSeriesId::CpiYoy,
+            MacroSeriesId::UnemploymentRate,
+        ] {
+            let s = series.as_db_str();
+            assert_eq!(MacroSeriesId::from_db_str(&s), Some(series));
+        }
+    }
+
+    #[test]
+    fn macro_series_id_unknown_returns_none() {
+        assert_eq!(MacroSeriesId::from_db_str("nonexistent_series"), None);
+    }
+}
