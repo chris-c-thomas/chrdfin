@@ -1,0 +1,42 @@
+{
+  "status": "OK",
+  "request_id": "be196df281084b5ea74c0800582d8e7e",
+  "results": [
+    {
+      "date": "2025-01-01",
+      "cpi": 318.961,
+      "cpi_year_over_year": 3.000483,
+      "cpi_core": 324.638,
+      "pce": 125.417,
+      "pce_core": 124.587,
+      "pce_spending": 20462.2
+    },
+    {
+      "date": "2025-02-01",
+      "cpi": 319.679,
+      "cpi_year_over_year": 2.821549,
+      "cpi_core": 325.465,
+      "pce": 125.921,
+      "pce_core": 125.145,
+      "pce_spending": 20519.8
+    },
+    {
+      "date": "2025-03-01",
+      "cpi": 319.785,
+      "cpi_year_over_year": 2.390725,
+      "cpi_core": 325.69,
+      "pce": 125.941,
+      "pce_core": 125.267,
+      "pce_spending": 20683.0
+    },
+    {
+      "date": "2025-04-01",
+      "cpi": 320.302,
+      "cpi_year_over_year": 2.311289,
+      "cpi_core": 326.467,
+      "pce": 126.15,
+      "pce_core": 125.502,
+      "pce_spending": 20746.4
+    }
+  ]
+}

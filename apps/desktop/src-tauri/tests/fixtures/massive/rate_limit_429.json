@@ -1,0 +1,5 @@
+{
+  "status": "ERROR",
+  "request_id": "00000000000000000000000000000000",
+  "error": "You have exceeded the maximum requests per minute. Please wait and try again."
+}

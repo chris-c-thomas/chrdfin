@@ -1,10 +1,13 @@
 mod commands;
 mod db;
 mod error;
-mod http;
-mod secrets;
+// `pub` so the integration tests under `tests/` can reach the adapter, types,
+// and shared infrastructure. Tauri command handlers live inside the crate
+// and would work either way.
+pub mod http;
+pub mod secrets;
 mod state;
-mod sync;
+pub mod sync;
 
 use tauri::Manager;
 

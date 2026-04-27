@@ -1,0 +1,33 @@
+{
+  "status": "OK",
+  "request_id": "c503e4a657a74dfaba56f555b616009b",
+  "results": [
+    {
+      "id": "E36416cce743c3964c5da63e1ef1626c0aece30fb47302eea5a49c0055c04e8d0",
+      "execution_date": "2020-08-31",
+      "split_from": 1.0,
+      "split_to": 4.0,
+      "ticker": "AAPL",
+      "adjustment_type": "forward_split",
+      "historical_adjustment_factor": 0.25
+    },
+    {
+      "id": "E91a6b74ca1a9dcbce26a1f34e24ae26ba2c6359822ccf901ecd827f419137654",
+      "execution_date": "2014-06-09",
+      "split_from": 1.0,
+      "split_to": 7.0,
+      "ticker": "AAPL",
+      "adjustment_type": "forward_split",
+      "historical_adjustment_factor": 0.035714
+    },
+    {
+      "id": "E90a77bdf742661741ed7c8fc086415f0457c2816c45899d73aaa88bdc8ff6025",
+      "execution_date": "2005-02-28",
+      "split_from": 1.0,
+      "split_to": 2.0,
+      "ticker": "AAPL",
+      "adjustment_type": "forward_split",
+      "historical_adjustment_factor": 0.017857
+    }
+  ]
+}

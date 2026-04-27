@@ -98,18 +98,17 @@ pub struct MacroObservation {
 /// `snake_case` variant name — that string is what lands in DuckDB's
 /// `macro_series.series_id` column.
 ///
-/// New series get added here as they're needed. Phase 1F seeds the four
-/// `DEFAULT_MACRO_SERIES` (3-month treasury, 10-year treasury, CPI year-over-
-/// year, unemployment rate); the rest are reserved for later phases.
+/// New variants get added when a phase actually needs them. Phase 1F seeds
+/// the four series referenced by `DEFAULT_MACRO_SERIES` (`treasury_3_mo`,
+/// `treasury_10_y`, `cpi_yoy`, `unemployment_rate`).
+///
+/// Each variant maps to a specific field inside one of Massive's `/fed/v1/*`
+/// bundle endpoints — `MassiveProvider` does the routing.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum MacroSeriesId {
     Treasury3Mo,
-    Treasury2Y,
     Treasury10Y,
-    Treasury30Y,
     CpiYoy,
-    CpiCoreYoy,
     UnemploymentRate,
-    FedFundsRate,
 }
