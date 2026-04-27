@@ -966,14 +966,17 @@ The Tauri command layer replaces REST API routes. Each command is a `#[tauri::co
 
 #### Deliverables
 
-1. Implement Tiingo adapter in Rust.
-2. Implement FRED adapter in Rust.
-3. Implement `sync_data` Tauri command with progress events.
-4. Implement background sync after market close.
-5. Implement data query commands: `get_prices`, `search_tickers`, `get_macro_series`, `get_asset_metadata`.
-6. Implement on-demand fetch for unknown tickers.
-7. Write tests for providers and DuckDB queries.
-8. Run initial seed. Validate integrity.
+1. Implement Massive (Polygon rebrand) adapter in Rust as the **sole** equity + macro provider for Phase 1. `DataProvider` and `MacroProvider` traits leave room for additional adapters at the source-priority level.
+2. Apply the source-aware schema migration: `source` column on `assets`, `daily_prices`, `dividends`, `splits`, `macro_series`; new `splits` table; `SOURCE_PRIORITY` table.
+3. Implement the `Sync` orchestrator with run-level mutex, per-ticker dedup map, single 429 retry, and per-ticker error isolation.
+4. Implement `sync_data` and `get_sync_status` Tauri commands (emit `sync:progress` events).
+5. Implement read commands: `get_prices`, `get_macro_series`, `get_asset_metadata`, `search_tickers`. On-demand fetch via `Sync::ensure_ticker` for unknown tickers; hybrid local + remote merge for search.
+6. Implement the background scheduler: launch catch-up if stale (>24 h) + daily 6 PM ET incremental on weekdays (DST-aware via `chrono-tz`).
+7. Implement `Sync::seed_if_needed` + `STARTER_UNIVERSE` (26 tickers) + `DEFAULT_MACRO_SERIES` (4 series).
+8. TanStack Query layer: `qk` factory, `usePrices` / `useTickerSearch` / `useAssetMetadata` / `useMacroSeries` / `useSyncStatus` / `useSyncDataMutation` / `useSyncProgress`. `<SyncStatusBadge />` in the header; `<DataLayerCard />` developer surface on the dashboard.
+9. Wiremock-backed unit tests for every Massive endpoint; in-memory DuckDB integration tests for storage helpers, orchestrator, and read commands. CI runs `cargo test -p chrdfin-desktop` on push to `main`.
+
+> Tiingo and FRED were called out in earlier sketches but never shipped — Phase 1 consolidated on Massive as the single provider for both equity and macro data. See `docs/sync-architecture.md` for the full data-layer architecture.
 
 ### Phase 2: Computation Core
 

@@ -12,6 +12,12 @@ const SCHEMA_SQL: &str = include_str!("schema.sql");
 /// Wrapped in a `Mutex` for shared mutable access across Tauri command
 /// handlers. DuckDB's own concurrency story is single-writer / many-reader,
 /// and the desktop app is single-user, so a plain mutex is sufficient.
+///
+/// Callers must NEVER hold the mutex across an `.await` point — it's a
+/// blocking `std::sync::Mutex`, and holding it across a yield would block
+/// every other task that needs DB access. The orchestrator's pattern is:
+/// fetch async, then briefly lock + write + drop the guard before the
+/// next await.
 pub struct Database {
     pub conn: Mutex<Connection>,
 }
@@ -35,5 +41,14 @@ impl Database {
         Ok(Self {
             conn: Mutex::new(conn),
         })
+    }
+
+    /// Test/integration helper that wraps an already-prepared `Connection`
+    /// (typically an in-memory DuckDB with the schema pre-applied) so the
+    /// orchestrator can be exercised against deterministic state.
+    pub fn from_connection(conn: Connection) -> Self {
+        Self {
+            conn: Mutex::new(conn),
+        }
     }
 }

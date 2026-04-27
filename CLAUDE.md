@@ -334,12 +334,11 @@ cargo fmt --check               # Format check
 Required environment variables (see `.env.example`):
 
 ```bash
-# Data Providers
-TIINGO_API_KEY=your_tiingo_api_key
-FRED_API_KEY=your_fred_api_key
+# Data Provider — Massive (rebranded from Polygon.io on 2025-10-30)
+MASSIVE_API_KEY=your_massive_api_key
 
-# Optional: Real-time quotes and options data
-POLYGON_API_KEY=your_polygon_api_key
+# Optional rate-limit + history-clamp profile. Defaults to "free" when unset.
+# MASSIVE_TIER=free
 
 # App
 NODE_ENV=development
@@ -410,12 +409,10 @@ See `docs/phase-0-checklist.md` for the detailed task list with implementation g
 
 | Provider | Required | Cost | Used For |
 |---|---|---|---|
-| **Tiingo** | Yes | $10/mo (Power) | EOD prices, metadata, dividends, news, search |
-| **FRED** | Yes | Free | Treasury rates, CPI, macro series |
-| **Polygon.io** | Optional | $29/mo (Starter) | Real-time quotes, options chains, fundamentals |
-| **RSS Feeds** | Optional | Free | Supplementary news headlines |
+| **Massive** (Polygon.io rebrand) | Yes | Free tier (5 RPM, ~2y history) → Stocks Starter $29/mo and up | EOD prices, ticker reference, dividends, splits, treasury yields, inflation, market status |
+| **RSS Feeds** | Optional | Free | Supplementary news headlines (Phase 8) |
 
-Start with Tiingo free tier during development. Tiingo Power ($10/mo) for production.
+Start on the free tier during development. Tier is pinned via `MASSIVE_TIER` env var (defaults to `free`); flip to `paid` once on Stocks Starter or higher to unlock the higher rate limit and longer history. Real-time quotes (Phase 5) and options chains (Phase 7) require a paid tier.
 
 ---
 
@@ -454,6 +451,17 @@ Start with Tiingo free tier during development. Tiingo Power ($10/mo) for produc
 - **`Icon?` rule in `.gitignore` matches `icons/` case-insensitively on APFS** — the macOS legacy desktop-icon pattern hides the Tauri icon set on default-config Macs. The `!apps/desktop/src-tauri/icons/**` force-include at the bottom of `.gitignore` is load-bearing; don't remove it.
 - **`pnpm/action-setup@v4` + `packageManager` field:** never pass `with: { version: ... }` — the action reads the exact version from `package.json` `packageManager` and errors with `ERR_PNPM_BAD_PM_VERSION` when both are set.
 - **CI debugging:** use `gh run list --limit 5` and `gh run view <id> --log-failed` to pull failed-step logs straight to the terminal instead of clicking through the GitHub web UI.
+- **Massive (Polygon rebrand):** free tier is **5 RPM** with ~2 years of history on aggregates. Default `MASSIVE_TIER` is `Free`; flip to `Paid` (or `starter` / `developer` / `advanced` / `business`) to unlock 100 req/sec and history back to 1990-01-01.
+- **Massive macro endpoints return bundles:** `/fed/v1/treasury-yields`, `/fed/v1/inflation`, and `/fed/v1/labor-market` each return one row carrying every tenor / flavor at once. The adapter in `sync/massive/mappers.rs` explodes them into per-`MacroSeriesId` observations so `macro_series` stays a clean `(series_id, date) -> value` shape.
+- **Splits adjustment:** Massive returns `split_from` / `split_to` ratios. Backtest math should multiply historical share counts by `split_to / split_from` (a 4-for-1 split is `split_from=1, split_to=4`).
+- **HTTP egress goes through `AppHttpClient`:** never `fetch()` from the webview. The Rust client owns the bearer header, gzip, and the timeout policy, and keeps API keys off the JS side.
+- **Tauri command bodies factor into `*_inner` functions:** the `#[tauri::command]` wrapper grabs `state.db` / `state.sync` and delegates. Integration tests target the inner functions directly so they don't need a Tauri runtime — see `tests/commands_data.rs`.
+- **Provider DTOs use `serde(rename_all = "camelCase")`:** wire format is camelCase so structs round-trip cleanly to TypeScript over Tauri IPC. Storage helpers map columns to Rust fields manually, so the rename only affects JSON serialization.
+- **`vitest.config.ts` must duplicate `vite.config.ts`'s `@/` alias:** vitest doesn't inherit Vite's `resolve.alias`. Test imports of `@/lib/...` fail with "Failed to resolve import" until the alias is also declared in the vitest config.
+- **`Sync` struct shadows `std::marker::Sync`:** when adding a trait bound that needs the auto trait, write `+ std::marker::Sync` in full. The `ProgressFn` type alias in `sync/orchestrator.rs` is the canonical example.
+- **`cargo test -p <crate> --lib <module>` for lib unit tests:** plain `cargo test sync::scheduler` only filters integration tests under `tests/`; lib unit tests in `src/` need `--lib` (or run all with `cargo test -p chrdfin-desktop` and let the filter apply across both targets).
+- **`cargo check --all-targets` for warning parity with CI:** plain `cargo check` skips the test build profile, so test-only `dead_code` and unused-import warnings only show up under `--all-targets` (or `cargo clippy --all-targets`). CI runs `--all-targets` for chrdfin-core; match it locally before pushing.
+- **DuckDB DML parses bare `current_timestamp` as a column reference,** not a value. In `INSERT`/`UPDATE` lists use `now()` instead — `... SET updated_at = now()` works; `... SET updated_at = current_timestamp` errors with "table X does not have a column named 'current_timestamp'". Schema `DEFAULT current_timestamp` is fine — only literal DML positions are affected.
 
 ---
 

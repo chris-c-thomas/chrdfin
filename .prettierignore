@@ -12,3 +12,7 @@ Cargo.lock
 docs/
 CLAUDE.md
 README.md
+
+# Captured API response fixtures — must mirror the wire format byte-for-byte;
+# reformatting them defeats the point of the fixture.
+apps/desktop/src-tauri/tests/fixtures/

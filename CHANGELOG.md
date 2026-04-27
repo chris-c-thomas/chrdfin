@@ -12,20 +12,75 @@ full versioning and release policy.
 
 ## [Unreleased]
 
+### Added
+
+- **Phase 1 — Data layer.** Massive (the rebrand of Polygon.io) is the sole
+  equity + macro data provider for the Phase 1 ship. The `DataProvider`
+  and `MacroProvider` traits leave room for additional adapters
+  (Tiingo, Schwab, Tradier) at the source-priority level without
+  restructuring storage or the orchestrator.
+- **`Sync` orchestrator.** Drives full and incremental syncs with a
+  run-level mutex, per-ticker dedup map (`DashMap` of async mutexes),
+  one transparent retry on 429 (honors `Retry-After`), and per-ticker
+  error isolation. Logs every run to `sync_log`.
+- **On-demand fetch.** `Sync::ensure_ticker` lets `get_prices` and
+  `get_asset_metadata` populate unknown tickers transparently —
+  concurrent requests for the same symbol queue behind a single fetch.
+- **Background scheduler.** `spawn_background_sync` runs
+  `Sync::seed_if_needed` on launch, kicks an incremental sync if the
+  local store is stale (>24 h), and then loops daily at **6 PM
+  America/New_York** on weekdays (DST-aware via `chrono-tz`). Failed
+  runs back off 1 h, capped at 4 retries before falling back to
+  next-day cadence.
+- **First-launch seed.** `STARTER_UNIVERSE` (26 ETFs + bonds +
+  commodities + major single names) and `DEFAULT_MACRO_SERIES` (4
+  series) populate on first launch, with `app_settings.seeded` tracking
+  completion.
+- **Read commands.** `get_prices`, `get_macro_series`,
+  `get_asset_metadata`, and `search_tickers` Tauri commands.
+  Local-first against DuckDB; on-demand fetch for unknown tickers;
+  hybrid local + remote merge for search.
+- **Source-aware schema.** New `source` column on `assets`,
+  `daily_prices`, `dividends`, `splits`, and `macro_series`. New
+  `splits` table. Source-priority model
+  (`storage::source::SOURCE_PRIORITY`) prevents a lower-priority row
+  from overwriting a higher-priority one.
+- **Frontend wiring.** `qk` query-key factory, TanStack Query hooks for
+  every read command + sync mutation + progress event,
+  `<SyncStatusBadge />` in the header, and `<DataLayerCard />`
+  developer surface on the dashboard (replaced by Settings UI in
+  Phase 10).
+- **`docs/sync-architecture.md`** — provider trait + adapter pattern,
+  source-priority model, orchestrator + scheduler lifecycle, on-demand
+  fetch dedup, free-tier vs paid-tier configuration, where to add a
+  second adapter, storage-backend swap path.
+
 ### Changed
 
-- **CI restructured for capacity and feedback latency.** Split the Rust job
-  into a fast path (`cargo check` + `cargo clippy` per crate, blocks PR
-  merges) and a slow path (`cargo test`, runs only on push to `main`).
-  Added a "Free disk space" step that reclaims ~25–30 GB of preinstalled
-  runner tooling so the bundled-DuckDB build stops exhausting disk.
-  Tightened the `Swatinem/rust-cache@v2` cache with `shared-key` and
-  `save-if: refs/heads/main` so PRs read the cache but don't pollute it,
-  and unchanged crates survive `Cargo.lock` drift.
-- **Removed `staticlib` from the Tauri desktop crate's `[lib].crate-type`.**
-  Tauri v2 desktop builds only need `cdylib` (Tauri loads at runtime) and
-  `rlib` (for `main.rs` to link). The `staticlib` archive was the largest
-  single artifact in the build and wasn't consumed anywhere.
+- **CI restructured for capacity and feedback latency.** Split the Rust
+  job into a fast path (`cargo check` + `cargo clippy` per crate,
+  blocks PR merges) and a slow path (`cargo test`, runs only on push
+  to `main`). Added a "Free disk space" step that reclaims ~25–30 GB
+  of preinstalled runner tooling so the bundled-DuckDB build stops
+  exhausting disk. Tightened the `Swatinem/rust-cache@v2` cache with
+  `shared-key` and `save-if: refs/heads/main` so PRs read the cache
+  but don't pollute it, and unchanged crates survive `Cargo.lock`
+  drift. The `rust-test` job now runs `cargo test -p chrdfin-desktop`
+  (mocked HTTP + in-memory DuckDB; no real network) on push to `main`.
+- **Removed `staticlib` from the Tauri desktop crate's
+  `[lib].crate-type`.** Tauri v2 desktop builds only need `cdylib`
+  (Tauri loads at runtime) and `rlib` (for `main.rs` to link). The
+  `staticlib` archive was the largest single artifact in the build and
+  wasn't consumed anywhere.
+- **Provider DTOs serialize as camelCase** over Tauri IPC so the
+  TypeScript layer round-trips cleanly without ad-hoc renaming.
+
+### Removed
+
+- **Tiingo and FRED references.** Phase 1 consolidated on Massive as
+  the sole provider for both equity and macro data; the Tiingo and
+  FRED adapter sketches that were called out earlier never shipped and
+  are dropped from the architecture.
 
 ## [0.0.1] - 2026-04-25
 

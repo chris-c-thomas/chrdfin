@@ -174,3 +174,31 @@ CREATE TABLE IF NOT EXISTS sync_log (
     started_at      TIMESTAMPTZ NOT NULL,
     completed_at    TIMESTAMPTZ
 );
+
+-- ============================================================
+-- Phase 1C: provenance + corporate-action splits
+-- ============================================================
+--
+-- Every row written by a data-provider adapter carries a `source`
+-- column so future providers (Tiingo, manual bulk backfill, etc.)
+-- can coexist with Massive-sourced rows. Upserts compare priority
+-- via a Rust-side helper (storage::source::priority_case_sql) so a
+-- higher-priority source's row never gets clobbered by a lower one.
+--
+-- These statements are additive + idempotent: existing chrdfin.duckdb
+-- files migrate cleanly on the next launch.
+
+ALTER TABLE assets       ADD COLUMN IF NOT EXISTS source VARCHAR DEFAULT 'massive';
+ALTER TABLE daily_prices ADD COLUMN IF NOT EXISTS source VARCHAR DEFAULT 'massive';
+ALTER TABLE dividends    ADD COLUMN IF NOT EXISTS source VARCHAR DEFAULT 'massive';
+ALTER TABLE macro_series ADD COLUMN IF NOT EXISTS source VARCHAR DEFAULT 'massive';
+
+CREATE TABLE IF NOT EXISTS splits (
+    ticker          VARCHAR NOT NULL REFERENCES assets(ticker),
+    execution_date  DATE NOT NULL,
+    split_from      DOUBLE NOT NULL,
+    split_to        DOUBLE NOT NULL,
+    adjustment_type VARCHAR,
+    source          VARCHAR DEFAULT 'massive',
+    PRIMARY KEY (ticker, execution_date)
+);

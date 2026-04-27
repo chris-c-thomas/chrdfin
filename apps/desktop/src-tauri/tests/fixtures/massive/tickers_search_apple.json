@@ -1,0 +1,77 @@
+{
+  "results": [
+    {
+      "ticker": "AAPI",
+      "name": "APPLE ISPORTS GROUP INC",
+      "market": "otc",
+      "locale": "us",
+      "primary_exchange": "OTC Link",
+      "type": "CS",
+      "active": true,
+      "currency_name": "USD",
+      "composite_figi": "BBG000CQN9X7",
+      "share_class_figi": "BBG001SGHPN2",
+      "last_updated_utc": "2026-01-16T22:33:43.445Z"
+    },
+    {
+      "ticker": "AAPL",
+      "name": "Apple Inc.",
+      "market": "stocks",
+      "locale": "us",
+      "primary_exchange": "XNAS",
+      "type": "CS",
+      "active": true,
+      "currency_name": "usd",
+      "cik": "0000320193",
+      "composite_figi": "BBG000B9XRY4",
+      "share_class_figi": "BBG001S5N8V8",
+      "last_updated_utc": "2026-04-26T06:07:54.636030431Z"
+    },
+    {
+      "ticker": "AAPX",
+      "name": "T-Rex 2X Long Apple Daily Target ETF",
+      "market": "stocks",
+      "locale": "us",
+      "primary_exchange": "BATS",
+      "type": "ETF",
+      "active": true,
+      "currency_name": "usd",
+      "cik": "0001771146",
+      "composite_figi": "BBG01KY72SD3",
+      "share_class_figi": "BBG01KY72T78",
+      "last_updated_utc": "2026-04-26T06:07:54.636030822Z"
+    },
+    {
+      "ticker": "AAPY",
+      "name": "Kurv Yield Premium Strategy Apple (AAPL) ETF",
+      "market": "stocks",
+      "locale": "us",
+      "primary_exchange": "BATS",
+      "type": "ETF",
+      "active": true,
+      "currency_name": "usd",
+      "cik": "0001848758",
+      "composite_figi": "BBG01QY0GMH9",
+      "share_class_figi": "BBG01QY0GNH7",
+      "last_updated_utc": "2026-04-26T06:07:54.636030912Z"
+    },
+    {
+      "ticker": "APLE",
+      "name": "Apple Hospitality REIT, Inc.",
+      "market": "stocks",
+      "locale": "us",
+      "primary_exchange": "XNYS",
+      "type": "CS",
+      "active": true,
+      "currency_name": "usd",
+      "cik": "0001418121",
+      "composite_figi": "BBG006473QX9",
+      "share_class_figi": "BBG006473QY8",
+      "last_updated_utc": "2026-04-26T06:07:54.636095155Z"
+    }
+  ],
+  "status": "OK",
+  "request_id": "0e8e93e09fae5fd771f4f80c5ade8aaa",
+  "count": 5,
+  "next_url": "https://api.massive.com/v3/reference/tickers?cursor=YWN0aXZlPXRydWUmYXA9NSZhcz0mbGltaXQ9NSZzZWFyY2g9YXBwbGUmc29ydD10aWNrZXI"
+}

@@ -65,6 +65,24 @@ const queryClient = new QueryClient({
 
 ---
 
+## Phase 1 implementation note
+
+The factory below is the long-term spec. The Phase 1 implementation in `apps/desktop/src/lib/queryKeys.ts` ships a smaller `qk` surface that covers exactly what the data layer commands expose today:
+
+```typescript
+export const qk = {
+  syncStatus: () => ["sync", "status"] as const,
+  prices: (ticker?: string, range?: { start: string; end: string }) => /* partial-keyed */,
+  asset: (ticker?: string) => /* partial-keyed */,
+  search: (query?: string) => /* partial-keyed */,
+  macro: (series?: string, range?: { start: string; end: string }) => /* partial-keyed */,
+} as const;
+```
+
+`useSyncDataMutation` (in `lib/queries/sync.ts`) invalidates `qk.syncStatus()`, `qk.prices()`, `qk.macro()`, and `qk.asset()` on `onSuccess` — partial keys hit the entire root, so every visible chart, screener, or detail panel refetches against the freshly-synced DuckDB rows. New keys land in `qk` as new commands ship; the larger factory below documents the eventual shape.
+
+---
+
 ## 1. Query Key Factory
 
 Centralized, typed query keys via a factory. Avoids string drift across the codebase and makes cache invalidation auditable.

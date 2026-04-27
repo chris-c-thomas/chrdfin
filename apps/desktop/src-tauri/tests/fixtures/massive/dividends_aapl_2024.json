@@ -1,0 +1,62 @@
+{
+  "status": "OK",
+  "request_id": "d18d2a0ca3804cbca5ba1439ff820cf5",
+  "results": [
+    {
+      "id": "E416a068758f85277196150c3eb73a3331d04698856c141e883ad95710dd0b189",
+      "ticker": "AAPL",
+      "record_date": "2024-11-11",
+      "pay_date": "2024-11-14",
+      "declaration_date": "2024-10-31",
+      "ex_dividend_date": "2024-11-08",
+      "frequency": 4,
+      "cash_amount": 0.25,
+      "currency": "USD",
+      "distribution_type": "recurring",
+      "historical_adjustment_factor": 0.993474,
+      "split_adjusted_cash_amount": 0.25
+    },
+    {
+      "id": "E47fd49ef418c51f7d2415b66030f735adaccf72d85f6b86eea12f96aa1d1c535",
+      "ticker": "AAPL",
+      "record_date": "2024-08-12",
+      "pay_date": "2024-08-15",
+      "declaration_date": "2024-08-01",
+      "ex_dividend_date": "2024-08-12",
+      "frequency": 4,
+      "cash_amount": 0.25,
+      "currency": "USD",
+      "distribution_type": "recurring",
+      "historical_adjustment_factor": 0.992325,
+      "split_adjusted_cash_amount": 0.25
+    },
+    {
+      "id": "E495b1d61b65ddc1eb3abd60eaacf33c1313433df83f5fd63f1971612ff684f79",
+      "ticker": "AAPL",
+      "record_date": "2024-05-13",
+      "pay_date": "2024-05-16",
+      "declaration_date": "2024-05-02",
+      "ex_dividend_date": "2024-05-10",
+      "frequency": 4,
+      "cash_amount": 0.25,
+      "currency": "USD",
+      "distribution_type": "recurring",
+      "historical_adjustment_factor": 0.990981,
+      "split_adjusted_cash_amount": 0.25
+    },
+    {
+      "id": "E8e4edd3b27095b7e918c127648feb5c4c256b8650b7f5c36d8ac260d8ec08086",
+      "ticker": "AAPL",
+      "record_date": "2024-02-12",
+      "pay_date": "2024-02-15",
+      "declaration_date": "2024-02-01",
+      "ex_dividend_date": "2024-02-09",
+      "frequency": 4,
+      "cash_amount": 0.24,
+      "currency": "USD",
+      "distribution_type": "recurring",
+      "historical_adjustment_factor": 0.989718,
+      "split_adjusted_cash_amount": 0.24
+    }
+  ]
+}

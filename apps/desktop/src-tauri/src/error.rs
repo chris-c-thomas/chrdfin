@@ -1,5 +1,7 @@
 use serde::Serialize;
 
+use crate::sync::error::ProviderError;
+
 /// Backend error type. Surfaced to the frontend as a string via Tauri
 /// command results — the `Display` impl produces user-readable messages.
 #[derive(Debug, thiserror::Error)]
@@ -15,6 +17,9 @@ pub enum AppError {
 
     #[error("tauri error: {0}")]
     Tauri(#[from] tauri::Error),
+
+    #[error("provider error: {0}")]
+    Provider(#[from] ProviderError),
 
     #[error("invalid input: {0}")]
     InvalidInput(String),
