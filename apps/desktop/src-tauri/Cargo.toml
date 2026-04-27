@@ -46,6 +46,10 @@ async-trait = "0.1"
 governor = "0.7"
 futures = "0.3"
 once_cell = "1"
+# Per-ticker concurrent-fetch dedup map. Lock-free reads, fine-grained
+# writes — better fit than a single Mutex<HashMap> for the orchestrator's
+# ensure_ticker path.
+dashmap = "6"
 
 [dev-dependencies]
 # Mocked HTTP for sub-phase 1B's Massive adapter tests.

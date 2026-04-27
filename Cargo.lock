@@ -649,6 +649,7 @@ dependencies = [
  "async-trait",
  "chrdfin-core",
  "chrono",
+ "dashmap",
  "duckdb",
  "futures",
  "governor",
