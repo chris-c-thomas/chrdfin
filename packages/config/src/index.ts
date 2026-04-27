@@ -15,4 +15,6 @@ export {
   MARKET_HOURS,
   POLLING_INTERVALS,
   DATA_LIMITS,
+  STARTER_UNIVERSE,
+  DEFAULT_MACRO_SERIES,
 } from "./constants.js";

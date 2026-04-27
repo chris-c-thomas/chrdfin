@@ -25,6 +25,22 @@ use crate::sync::types::MacroSeriesId;
 /// Settings key holding the JSON array of tickers to sync.
 pub const SETTING_TRACKED_UNIVERSE: &str = "tracked_universe";
 
+/// Settings key holding the bool for "first-launch seed has run". Once
+/// `true`, `seed_if_needed` is a no-op for the rest of the install's
+/// lifetime — the user can later edit `tracked_universe` freely.
+pub const SETTING_SEEDED: &str = "seeded";
+
+/// First-launch starter equity universe. Mirror of
+/// `STARTER_UNIVERSE` in `@chrdfin/config` (kept in sync by hand —
+/// these are reference data, not an integration boundary).
+pub const STARTER_UNIVERSE: &[&str] = &[
+    // Core ETFs
+    "SPY", "QQQ", "IWM", "DIA", "VTI", "VOO", "VEA", "VWO", // Bonds
+    "AGG", "BND", "TLT", "IEF", "SHY", "TIP", // Sector + Commodities
+    "GLD", "SLV", "USO", "VNQ", // Major single names
+    "AAPL", "MSFT", "NVDA", "AMZN", "GOOGL", "META", "TSLA", "BRK-B",
+];
+
 /// Macro series fetched on every full or incremental run. Phase 1F seed
 /// also populates these into `app_settings.tracked_universe` for the
 /// equity universe; the macro list is fixed in code.
@@ -152,6 +168,48 @@ impl Sync {
         };
 
         Ok(summary)
+    }
+
+    /// First-launch seed. Idempotent — once `app_settings.seeded` is
+    /// `true`, subsequent calls return immediately. On first run:
+    ///
+    /// 1. Write `STARTER_UNIVERSE` into `app_settings.tracked_universe`
+    ///    (only if the user hasn't already set it).
+    /// 2. Run `Sync::run(Full)`.
+    /// 3. If at least one ticker landed successfully, flip
+    ///    `app_settings.seeded = true`. Partial completion is good
+    ///    enough — incremental runs will top up the rest.
+    pub async fn seed_if_needed(&self) -> AppResult<()> {
+        let already_seeded: bool = self
+            .with_conn(|c| settings::get_setting::<bool>(c, SETTING_SEEDED))?
+            .unwrap_or(false);
+        if already_seeded {
+            return Ok(());
+        }
+
+        let existing_universe: Option<Vec<String>> =
+            self.with_conn(|c| settings::get_setting(c, SETTING_TRACKED_UNIVERSE))?;
+        if existing_universe.is_none() {
+            let universe: Vec<String> = STARTER_UNIVERSE.iter().map(|s| s.to_string()).collect();
+            self.with_conn(|c| settings::set_setting(c, SETTING_TRACKED_UNIVERSE, &universe))?;
+            tracing::info!(count = universe.len(), "seeded tracked_universe");
+        }
+
+        let summary = self.run(SyncMode::Full, Box::new(|_| {})).await?;
+        if summary.tickers_synced > 0 {
+            self.with_conn(|c| settings::set_setting(c, SETTING_SEEDED, &true))?;
+            tracing::info!(
+                tickers_synced = summary.tickers_synced,
+                rows_upserted = summary.rows_upserted,
+                "seed completed; flipping app_settings.seeded"
+            );
+        } else {
+            tracing::warn!(
+                errors = summary.errors.len(),
+                "seed run completed without any successful ticker; will retry on next launch"
+            );
+        }
+        Ok(())
     }
 
     /// Live remote search — used by `commands::data::search_tickers` when

@@ -10,4 +10,5 @@ pub mod massive;
 pub mod orchestrator;
 pub mod provider;
 pub mod rate_limit;
+pub mod scheduler;
 pub mod types;

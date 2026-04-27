@@ -34,6 +34,7 @@ For full architectural context: read `docs/technical-blueprint.md` and `CLAUDE.m
 | `docs/chart-recipes.md` | Recharts patterns: `<EquityCurveWithDrawdown>`, `<AllocationDonut>`, `<ReturnsHistogram>`, `<AnnualReturnsBar>`, `<PerformanceArea>`, `<MonteCarloCone>`, plus chart foundations | Any chart implementation; before adding a new visualization type |
 | `docs/route-conventions.md` | TanStack Router file-based routing, search param schemas, lazy loading, error/pending boundaries, feature flag integration | Any new route, change to URL structure, or search param handling |
 | `docs/data-fetching-patterns.md` | TanStack Query + Tauri command patterns: cache keys, invalidation graph, optimistic mutations, real-time event subscriptions | Any data fetching from Rust; mutations; live quote handling; sync coordination |
+| `docs/sync-architecture.md` | Provider trait + adapter pattern, source-priority model, orchestrator + scheduler lifecycle, on-demand fetch dedup, free-tier vs paid-tier configuration, where to add a second adapter | Sync, providers, and the data layer |
 | `docs/form-patterns.md` | React Hook Form + Zod conventions, field primitives, search-param-synced forms, field arrays, async validation, mutation integration | Any form, calculator, filter bar, or config UI |
 | `docs/agent-handoff.md` | This file — the router | First — every session |
 
@@ -95,6 +96,13 @@ Identify the task type, read the listed documents in order, then proceed. If a t
 1. `docs/data-fetching-patterns.md` (event subscription patterns, the `useTauriEvent` hook)
 2. `docs/technical-blueprint.md` (Rust-side event emission)
 3. `docs/type-definitions-reference.md` (event payload types)
+
+### Sync, providers, and the data layer
+
+1. `docs/sync-architecture.md` (provider trait, source priority, orchestrator + scheduler lifecycle)
+2. `docs/database-schema-reference.md` (`source` column, `splits` table, `sync_log`)
+3. `docs/data-fetching-patterns.md` (`qk` keys + `sync:completed` invalidation graph)
+4. `docs/technical-blueprint.md` (where the data layer slots into the broader architecture)
 
 ### Schema or data model changes
 

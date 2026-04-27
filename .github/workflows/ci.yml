@@ -166,3 +166,9 @@ jobs:
 
       - name: cargo test (chrdfin-core)
         run: cargo test -p chrdfin-core
+
+      # Phase 1 desktop tests are mocked (wiremock) + in-memory (DuckDB
+      # `:memory:`) — no real network or filesystem state needed. Live
+      # API tests under tests/massive_live.rs are `#[ignore]`-gated.
+      - name: cargo test (chrdfin-desktop, mocked + in-memory)
+        run: cargo test -p chrdfin-desktop

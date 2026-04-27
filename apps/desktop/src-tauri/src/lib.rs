@@ -21,6 +21,7 @@ use crate::secrets::Secrets;
 use crate::state::AppState;
 use crate::sync::massive::client::MassiveProvider;
 use crate::sync::orchestrator::Sync;
+use crate::sync::scheduler::spawn_background_sync;
 
 /// Tauri application entry point — invoked by both `main.rs` and the
 /// mobile/desktop launcher in production builds.
@@ -46,6 +47,9 @@ pub fn run() {
                 secrets.massive_tier,
             ));
             let sync = Arc::new(Sync::new(massive, db.clone(), secrets.massive_tier));
+            // Detached background task — Tauri's tokio runtime owns it
+            // for the app's lifetime.
+            let _scheduler_handle = spawn_background_sync(sync.clone(), db.clone());
             app.manage(AppState::new(db, http, secrets, sync));
             Ok(())
         })

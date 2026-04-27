@@ -451,6 +451,14 @@ Start on the free tier during development. Tier is pinned via `MASSIVE_TIER` env
 - **`Icon?` rule in `.gitignore` matches `icons/` case-insensitively on APFS** — the macOS legacy desktop-icon pattern hides the Tauri icon set on default-config Macs. The `!apps/desktop/src-tauri/icons/**` force-include at the bottom of `.gitignore` is load-bearing; don't remove it.
 - **`pnpm/action-setup@v4` + `packageManager` field:** never pass `with: { version: ... }` — the action reads the exact version from `package.json` `packageManager` and errors with `ERR_PNPM_BAD_PM_VERSION` when both are set.
 - **CI debugging:** use `gh run list --limit 5` and `gh run view <id> --log-failed` to pull failed-step logs straight to the terminal instead of clicking through the GitHub web UI.
+- **Massive (Polygon rebrand):** free tier is **5 RPM** with ~2 years of history on aggregates. Default `MASSIVE_TIER` is `Free`; flip to `Paid` (or `starter` / `developer` / `advanced` / `business`) to unlock 100 req/sec and history back to 1990-01-01.
+- **Massive macro endpoints return bundles:** `/fed/v1/treasury-yields`, `/fed/v1/inflation`, and `/fed/v1/labor-market` each return one row carrying every tenor / flavor at once. The adapter in `sync/massive/mappers.rs` explodes them into per-`MacroSeriesId` observations so `macro_series` stays a clean `(series_id, date) -> value` shape.
+- **Splits adjustment:** Massive returns `split_from` / `split_to` ratios. Backtest math should multiply historical share counts by `split_to / split_from` (a 4-for-1 split is `split_from=1, split_to=4`).
+- **HTTP egress goes through `AppHttpClient`:** never `fetch()` from the webview. The Rust client owns the bearer header, gzip, and the timeout policy, and keeps API keys off the JS side.
+- **Tauri command bodies factor into `*_inner` functions:** the `#[tauri::command]` wrapper grabs `state.db` / `state.sync` and delegates. Integration tests target the inner functions directly so they don't need a Tauri runtime — see `tests/commands_data.rs`.
+- **Provider DTOs use `serde(rename_all = "camelCase")`:** wire format is camelCase so structs round-trip cleanly to TypeScript over Tauri IPC. Storage helpers map columns to Rust fields manually, so the rename only affects JSON serialization.
+- **`vitest.config.ts` must duplicate `vite.config.ts`'s `@/` alias:** vitest doesn't inherit Vite's `resolve.alias`. Test imports of `@/lib/...` fail with "Failed to resolve import" until the alias is also declared in the vitest config.
+- **`Sync` struct shadows `std::marker::Sync`:** when adding a trait bound that needs the auto trait, write `+ std::marker::Sync` in full. The `ProgressFn` type alias in `sync/orchestrator.rs` is the canonical example.
 
 ---
 
