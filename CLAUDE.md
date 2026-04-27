@@ -334,12 +334,11 @@ cargo fmt --check               # Format check
 Required environment variables (see `.env.example`):
 
 ```bash
-# Data Providers
-TIINGO_API_KEY=your_tiingo_api_key
-FRED_API_KEY=your_fred_api_key
+# Data Provider — Massive (rebranded from Polygon.io on 2025-10-30)
+MASSIVE_API_KEY=your_massive_api_key
 
-# Optional: Real-time quotes and options data
-POLYGON_API_KEY=your_polygon_api_key
+# Optional rate-limit + history-clamp profile. Defaults to "free" when unset.
+# MASSIVE_TIER=free
 
 # App
 NODE_ENV=development
@@ -410,12 +409,10 @@ See `docs/phase-0-checklist.md` for the detailed task list with implementation g
 
 | Provider | Required | Cost | Used For |
 |---|---|---|---|
-| **Tiingo** | Yes | $10/mo (Power) | EOD prices, metadata, dividends, news, search |
-| **FRED** | Yes | Free | Treasury rates, CPI, macro series |
-| **Polygon.io** | Optional | $29/mo (Starter) | Real-time quotes, options chains, fundamentals |
-| **RSS Feeds** | Optional | Free | Supplementary news headlines |
+| **Massive** (Polygon.io rebrand) | Yes | Free tier (5 RPM, ~2y history) → Stocks Starter $29/mo and up | EOD prices, ticker reference, dividends, splits, treasury yields, inflation, market status |
+| **RSS Feeds** | Optional | Free | Supplementary news headlines (Phase 8) |
 
-Start with Tiingo free tier during development. Tiingo Power ($10/mo) for production.
+Start on the free tier during development. Tier is pinned via `MASSIVE_TIER` env var (defaults to `free`); flip to `paid` once on Stocks Starter or higher to unlock the higher rate limit and longer history. Real-time quotes (Phase 5) and options chains (Phase 7) require a paid tier.
 
 ---
 

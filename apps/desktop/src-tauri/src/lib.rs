@@ -1,11 +1,16 @@
 mod commands;
 mod db;
 mod error;
+mod http;
+mod secrets;
 mod state;
+mod sync;
 
 use tauri::Manager;
 
 use crate::db::Database;
+use crate::http::AppHttpClient;
+use crate::secrets::Secrets;
 use crate::state::AppState;
 
 /// Tauri application entry point — invoked by both `main.rs` and the
@@ -19,11 +24,14 @@ pub fn run() {
         )
         .init();
 
+    let http = AppHttpClient::new();
+    let secrets = Secrets::from_env();
+
     tauri::Builder::default()
         .plugin(tauri_plugin_shell::init())
-        .setup(|app| {
+        .setup(move |app| {
             let db = Database::initialize(app.handle())?;
-            app.manage(AppState::new(db));
+            app.manage(AppState::new(db, http, secrets));
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
