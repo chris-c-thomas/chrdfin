@@ -98,3 +98,75 @@ export interface MacroSeriesPoint {
   readonly date: ISODateString;
   readonly value: number;
 }
+
+/**
+ * Closed enum mirroring `MacroSeriesId` in the Rust backend. Add a variant
+ * here whenever the orchestrator's `DEFAULT_MACRO_SERIES` adds one.
+ */
+export type MacroSeriesId = "treasury_3_mo" | "treasury_10_y" | "cpi_yoy" | "unemployment_rate";
+
+/**
+ * One observation from `macro_series`. Wire shape from the
+ * `get_macro_series` Tauri command.
+ */
+export interface MacroObservation {
+  readonly series: MacroSeriesId;
+  readonly date: ISODateString;
+  readonly value: number;
+}
+
+/** One ticker hit returned by the `search_tickers` Tauri command. */
+export interface TickerSearchHit {
+  readonly ticker: string;
+  readonly name: string;
+  readonly assetType?: string;
+  readonly exchange?: string;
+}
+
+/** Wire shape returned by `search_tickers`. */
+export interface TickerSearchResponse {
+  readonly hits: readonly TickerSearchHit[];
+}
+
+// ---------------------------------------------------------------------------
+// Sync orchestrator DTOs (mirror sync::orchestrator in the Rust backend)
+// ---------------------------------------------------------------------------
+
+export type SyncMode = "full" | "incremental";
+
+export interface SyncProgress {
+  readonly phase: string;
+  readonly current: number;
+  readonly total: number;
+  readonly message?: string;
+}
+
+export interface SyncErrorRow {
+  readonly ticker: string;
+  readonly error: string;
+}
+
+export interface SyncSummary {
+  readonly mode: SyncMode;
+  readonly startedAt: ISODateTimeString;
+  readonly completedAt: ISODateTimeString;
+  readonly tickersSynced: number;
+  readonly rowsUpserted: number;
+  readonly errors: readonly SyncErrorRow[];
+}
+
+export interface SyncRunRow {
+  readonly id: string;
+  readonly syncType: string;
+  readonly status: string;
+  readonly tickersSynced: number | null;
+  readonly rowsUpserted: number | null;
+  readonly errorMessage: string | null;
+  readonly startedAt: ISODateTimeString;
+  readonly completedAt: ISODateTimeString | null;
+}
+
+export interface SyncStatus {
+  readonly lastSuccessfulSync: ISODateTimeString | null;
+  readonly latest: SyncRunRow | null;
+}

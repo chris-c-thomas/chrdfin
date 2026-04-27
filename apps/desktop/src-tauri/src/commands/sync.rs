@@ -75,6 +75,43 @@ pub struct SyncRunRow {
     pub completed_at: Option<DateTime<Utc>>,
 }
 
+fn read_run_row(row: &duckdb::Row<'_>) -> duckdb::Result<SyncRunRow> {
+    Ok(SyncRunRow {
+        id: row.get(0)?,
+        sync_type: row.get(1)?,
+        status: row.get(2)?,
+        tickers_synced: row.get(3)?,
+        rows_upserted: row.get(4)?,
+        error_message: row.get(5)?,
+        started_at: row.get(6)?,
+        completed_at: row.get(7)?,
+    })
+}
+
+/// Read-only list of the N most recent sync_log rows for the dev card.
+/// Removed alongside `DataLayerCard` when proper Settings ships in
+/// Phase 10.
+#[tauri::command]
+pub fn get_recent_sync_runs(state: State<'_, AppState>) -> AppResult<Vec<SyncRunRow>> {
+    const LIMIT: usize = 10;
+    let conn = state
+        .db
+        .conn
+        .lock()
+        .map_err(|e| AppError::InvalidInput(format!("db mutex poisoned: {e}")))?;
+    let mut stmt = conn.prepare(
+        r#"
+        SELECT id, sync_type, status, tickers_synced, rows_upserted,
+               error_message, started_at, completed_at
+        FROM sync_log
+        ORDER BY started_at DESC
+        LIMIT ?
+        "#,
+    )?;
+    let rows = stmt.query_map([LIMIT as i64], read_run_row)?;
+    Ok(rows.collect::<duckdb::Result<Vec<_>>>()?)
+}
+
 /// Read-only status surface for the dashboard. Returns the latest
 /// `sync_log` row plus the timestamp of the most recent successful run
 /// so the UI can render "Last synced N minutes ago" alongside any
@@ -100,16 +137,7 @@ pub fn get_sync_status(state: State<'_, AppState>) -> AppResult<SyncStatus> {
     )?;
     let mut rows = stmt.query([])?;
     let latest = if let Some(row) = rows.next()? {
-        Some(SyncRunRow {
-            id: row.get(0)?,
-            sync_type: row.get(1)?,
-            status: row.get(2)?,
-            tickers_synced: row.get(3)?,
-            rows_upserted: row.get(4)?,
-            error_message: row.get(5)?,
-            started_at: row.get(6)?,
-            completed_at: row.get(7)?,
-        })
+        Some(read_run_row(row)?)
     } else {
         None
     };

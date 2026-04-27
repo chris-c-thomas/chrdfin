@@ -1,7 +1,8 @@
-mod commands;
 // `pub` so the integration tests under `tests/` can reach the adapter, types,
-// and shared infrastructure. Tauri command handlers live inside the crate
-// and would work either way.
+// shared infrastructure, and the `*_inner` test entry points on the commands.
+// The Tauri command handlers themselves live inside the crate and would work
+// either way.
+pub mod commands;
 pub mod db;
 mod error;
 pub mod http;
@@ -54,6 +55,11 @@ pub fn run() {
             commands::system::set_theme,
             commands::sync::sync_data,
             commands::sync::get_sync_status,
+            commands::sync::get_recent_sync_runs,
+            commands::data::get_prices,
+            commands::data::get_macro_series,
+            commands::data::get_asset_metadata,
+            commands::data::search_tickers,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

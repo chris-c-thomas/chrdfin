@@ -154,6 +154,18 @@ impl Sync {
         Ok(summary)
     }
 
+    /// Live remote search — used by `commands::data::search_tickers` when
+    /// the local store doesn't have enough hits to satisfy `limit`. Kept
+    /// here (rather than exposing `MassiveProvider` directly) so the
+    /// command layer has a single seam to the data layer.
+    pub async fn search_tickers_remote(
+        &self,
+        query: &str,
+        limit: u32,
+    ) -> Result<Vec<crate::sync::types::TickerSearchHit>, ProviderError> {
+        self.massive.search_tickers(query, limit).await
+    }
+
     /// On-demand fetch entry point. Used by the read commands (sub-phase
     /// 1E) when `get_prices` for an unknown ticker arrives.
     ///

@@ -11,6 +11,7 @@ import { Moon, Search, Sun } from "lucide-react";
 import { Fragment, type JSX } from "react";
 
 import { MarketStatusIndicator } from "./market-status-indicator.js";
+import { SyncStatusBadge } from "./sync-status-badge.js";
 
 import { useTheme } from "@/components/providers/theme-provider.js";
 
@@ -86,6 +87,8 @@ export function AppHeader({ onOpenCommandPalette }: AppHeaderProps): JSX.Element
         <span className="flex-1 text-left">Search tickers, portfolios, tools…</span>
         <kbd className="text-muted-foreground font-mono text-xs">⌘K</kbd>
       </button>
+
+      <SyncStatusBadge />
 
       <MarketStatusIndicator />
 

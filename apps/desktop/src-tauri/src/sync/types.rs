@@ -5,7 +5,11 @@ use serde::{Deserialize, Serialize};
 ///
 /// Fields mirror what every adapter is expected to return after parsing
 /// and normalization. Storage upserts (sub-phase 1C) consume this directly.
+///
+/// Wire format is camelCase so this struct round-trips cleanly to the
+/// TypeScript layer over Tauri IPC.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct DailyPrice {
     pub ticker: String,
     pub date: NaiveDate,
@@ -19,6 +23,7 @@ pub struct DailyPrice {
 
 /// One cash dividend distribution.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Dividend {
     pub ticker: String,
     pub ex_date: NaiveDate,
@@ -37,6 +42,7 @@ pub enum DividendType {
 
 /// One stock split event.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Split {
     pub ticker: String,
     pub execution_date: NaiveDate,
@@ -60,6 +66,7 @@ pub enum SplitType {
 /// typically carry far more fields than this; adapters keep only the ones
 /// the platform actually consumes and stash the rest in `extras`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct AssetMetadata {
     pub ticker: String,
     pub name: String,
@@ -75,6 +82,7 @@ pub struct AssetMetadata {
 
 /// One row of an autocomplete / lookup response.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct TickerSearchHit {
     pub ticker: String,
     pub name: String,

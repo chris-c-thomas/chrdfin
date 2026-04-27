@@ -12,6 +12,8 @@ import {
 } from "lucide-react";
 import { useEffect, useState, type JSX } from "react";
 
+import { DataLayerCard } from "@/components/dev/data-layer-card.js";
+
 interface HealthCheckResponse {
   status: string;
   db_initialized: boolean;
@@ -118,6 +120,8 @@ function DashboardPage(): JSX.Element {
           })}
         </div>
       </section>
+
+      <DataLayerCard />
 
       <Card className="max-w-2xl">
         <CardHeader>
