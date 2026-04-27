@@ -459,6 +459,9 @@ Start on the free tier during development. Tier is pinned via `MASSIVE_TIER` env
 - **Provider DTOs use `serde(rename_all = "camelCase")`:** wire format is camelCase so structs round-trip cleanly to TypeScript over Tauri IPC. Storage helpers map columns to Rust fields manually, so the rename only affects JSON serialization.
 - **`vitest.config.ts` must duplicate `vite.config.ts`'s `@/` alias:** vitest doesn't inherit Vite's `resolve.alias`. Test imports of `@/lib/...` fail with "Failed to resolve import" until the alias is also declared in the vitest config.
 - **`Sync` struct shadows `std::marker::Sync`:** when adding a trait bound that needs the auto trait, write `+ std::marker::Sync` in full. The `ProgressFn` type alias in `sync/orchestrator.rs` is the canonical example.
+- **`cargo test -p <crate> --lib <module>` for lib unit tests:** plain `cargo test sync::scheduler` only filters integration tests under `tests/`; lib unit tests in `src/` need `--lib` (or run all with `cargo test -p chrdfin-desktop` and let the filter apply across both targets).
+- **`cargo check --all-targets` for warning parity with CI:** plain `cargo check` skips the test build profile, so test-only `dead_code` and unused-import warnings only show up under `--all-targets` (or `cargo clippy --all-targets`). CI runs `--all-targets` for chrdfin-core; match it locally before pushing.
+- **DuckDB DML parses bare `current_timestamp` as a column reference,** not a value. In `INSERT`/`UPDATE` lists use `now()` instead — `... SET updated_at = now()` works; `... SET updated_at = current_timestamp` errors with "table X does not have a column named 'current_timestamp'". Schema `DEFAULT current_timestamp` is fine — only literal DML positions are affected.
 
 ---
 
